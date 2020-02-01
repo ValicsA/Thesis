@@ -1,0 +1,5 @@
+Log file created at: 2020/01/29 20:42:35
+Running on machine: Akos-ubuntu
+Log line format: [IWEF]mmdd hh:mm:ss.uuuuuu threadid file:line] msg
+W0129 20:42:35.821655 28782 reference_count.cc:43] Tried to decrease ref count for nonexistent object ID: db73a549b77b11bab0f36e831e5f000000000000
+W0129 20:42:35.827189 28936 reference_count.cc:43] Tried to decrease ref count for nonexistent object ID: ffffffffffffffffffffffff0100008008000000
