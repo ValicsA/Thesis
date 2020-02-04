@@ -28,6 +28,8 @@ vehicles.add("human",
              routing_controller=(ContinuousRouter, {}),
              num_vehicles=22)
 
+ADDITIONAL_NET_PARAMS["lanes"] = 2
+
 net_params = NetParams(additional_params=ADDITIONAL_NET_PARAMS)
 
 initial_config = InitialConfig(spacing="uniform", perturbation=1)
