@@ -14,22 +14,51 @@ from flow.core.params import NetParams, SumoCarFollowingParams, SumoLaneChangePa
     TrafficLightParams, VehicleParams, SumoParams, EnvParams
 from flow.envs.ring.accel import ADDITIONAL_ENV_PARAMS, AccelEnv
 from flow.networks import Network
-# from flow.networks.highway import ADDITIONAL_NET_PARAMS
 
 ADDITIONAL_NET_PARAMS = {
     "num_lanes": 3,
     "speed_limit": 40
 }
 # inflow rate at the highway
-FLOW_RATE = 3000
+VEHICLE_PER_HOUR = 300
 
 
 inflow = InFlows()
 inflow.add(
-    veh_type="human",
+    veh_type="traffic_slow",
     edge="edge1",
-    vehs_per_hour=FLOW_RATE,
-    departLane="random",
+    vehs_per_hour=VEHICLE_PER_HOUR,
+    departLane=0,
+    depart_speed="random")
+inflow.add(
+    veh_type="traffic_slow",
+    edge="edge1",
+    vehs_per_hour=VEHICLE_PER_HOUR,
+    departLane=1,
+    depart_speed="random")
+inflow.add(
+    veh_type="traffic_slow",
+    edge="edge1",
+    vehs_per_hour=VEHICLE_PER_HOUR*0.1,
+    departLane=2,
+    depart_speed="random")
+inflow.add(
+    veh_type="traffic_fast",
+    edge="edge1",
+    vehs_per_hour=VEHICLE_PER_HOUR*0.1,
+    departLane=0,
+    depart_speed="random")
+inflow.add(
+    veh_type="traffic_fast",
+    edge="edge1",
+    vehs_per_hour=VEHICLE_PER_HOUR,
+    departLane=1,
+    depart_speed="random")
+inflow.add(
+    veh_type="traffic_fast",
+    edge="edge1",
+    vehs_per_hour=VEHICLE_PER_HOUR,
+    departLane=2,
     depart_speed="random")
 
 
@@ -122,8 +151,15 @@ name = "example"
 vehicles = VehicleParams()
 
 
-vehicles.add("human",
+vehicles.add("traffic_slow",
              acceleration_controller=(IDMController, {"v0": 15}),
+             routing_controller=(ContinuousRouter, {}),
+             car_following_params=SumoCarFollowingParams(),
+             lane_change_params=SumoLaneChangeParams(lane_change_mode="strategic"),
+             num_vehicles=0)
+
+vehicles.add("traffic_fast",
+             acceleration_controller=(IDMController, {"v0": 30}),
              routing_controller=(ContinuousRouter, {}),
              car_following_params=SumoCarFollowingParams(),
              lane_change_params=SumoLaneChangeParams(lane_change_mode="strategic"),
@@ -145,12 +181,12 @@ initial_config = InitialConfig(spacing="random", perturbation=1, edges_distribut
 
 traffic_lights = TrafficLightParams()
 
-sim_params = SumoParams(sim_step=0.1, render=True, emission_path='data', restart_instance=True, overtake_right=False)
+sim_params = SumoParams(sim_step=1, render=True, emission_path='data', restart_instance=True, overtake_right=False)
 
 env_params = EnvParams(additional_params=ADDITIONAL_ENV_PARAMS)
 
 flow_params = dict(
-    exp_tag='ring_example',
+    exp_tag='highway',
     env_name=AccelEnv,
     network=MyNetwork,
     simulator='traci',
@@ -163,7 +199,7 @@ flow_params = dict(
 )
 
 # number of time steps
-flow_params['env'].horizon = 2000
+flow_params['env'].horizon = 1000
 exp = Experiment(flow_params)
 
 # run the sumo simulation
