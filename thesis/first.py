@@ -20,45 +20,45 @@ ADDITIONAL_NET_PARAMS = {
     "speed_limit": 40
 }
 # inflow rate at the highway
-VEHICLE_PER_HOUR = 300
+FLOW_RATE = 200
 
 
 inflow = InFlows()
 inflow.add(
     veh_type="traffic_slow",
     edge="edge1",
-    vehs_per_hour=VEHICLE_PER_HOUR,
-    departLane=0,
+    vehs_per_hour=FLOW_RATE,
+    depart_lane=0,
     depart_speed="random")
 inflow.add(
     veh_type="traffic_slow",
     edge="edge1",
-    vehs_per_hour=VEHICLE_PER_HOUR,
-    departLane=1,
+    vehs_per_hour=FLOW_RATE,
+    depart_lane=1,
     depart_speed="random")
 inflow.add(
     veh_type="traffic_slow",
     edge="edge1",
-    vehs_per_hour=VEHICLE_PER_HOUR*0.1,
-    departLane=2,
+    vehs_per_hour=FLOW_RATE * 0.1,
+    depart_lane=2,
     depart_speed="random")
 inflow.add(
     veh_type="traffic_fast",
     edge="edge1",
-    vehs_per_hour=VEHICLE_PER_HOUR*0.1,
-    departLane=0,
+    vehs_per_hour=FLOW_RATE * 0.1,
+    depart_lane=0,
     depart_speed="random")
 inflow.add(
     veh_type="traffic_fast",
     edge="edge1",
-    vehs_per_hour=VEHICLE_PER_HOUR,
-    departLane=1,
+    vehs_per_hour=FLOW_RATE,
+    depart_lane=1,
     depart_speed="random")
 inflow.add(
     veh_type="traffic_fast",
     edge="edge1",
-    vehs_per_hour=VEHICLE_PER_HOUR,
-    departLane=2,
+    vehs_per_hour=FLOW_RATE,
+    depart_lane=2,
     depart_speed="random")
 
 
