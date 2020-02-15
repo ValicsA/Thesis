@@ -1,0 +1,206 @@
+Simulation parameters
+
+***********************
+Run these in every case
+***********************
+FLOW_RATE	700		500		300		200		100
+human_speed	15-30		10-20		20-30
+rl_speed	20		30		40
+
+*********************
+Additional parameters
+*********************
+T		1		0.5		1.5
+a		1		2		3
+lanechange	strategic	aggressive	custom int
+carfollow	right-of-way	no_collide	aggressive	custom int
+
+**********
+Test cases
+**********
+
+case_1:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+700		15-30		20		1	1	strategic	right-of-way
+
+case_2:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+500		15-30		20		1	1	strategic	right-of-way
+
+case_3:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+300		15-30		20		1	1	strategic	right-of-way
+
+case_4:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+200		15-30		20		1	1	strategic	right-of-way
+
+case_5:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+100		15-30		20		1	1	strategic	right-of-way
+
+case_6:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+700		15-30		30		1	1	strategic	right-of-way
+
+case_7:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+500		15-30		30		1	1	strategic	right-of-way
+
+case_8:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+300		15-30		30		1	1	strategic	right-of-way
+
+case_9:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+200		15-30		30		1	1	strategic	right-of-way
+
+case_10:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+100		15-30		30		1	1	strategic	right-of-way
+
+case_11:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+700		15-30		40		1	1	strategic	right-of-way
+
+case_12:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+500		15-30		40		1	1	strategic	right-of-way
+
+case_13:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+300		15-30		40		1	1	strategic	right-of-way
+
+case_14:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+200		15-30		40		1	1	strategic	right-of-way
+
+case_15:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+100		15-30		40		1	1	strategic	right-of-way
+
+case_16:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+700		10-20		20		1	1	strategic	right-of-way
+
+case_17:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+500		10-20		20		1	1	strategic	right-of-way
+
+case_18:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+300		10-20		20		1	1	strategic	right-of-way
+
+case_19:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+200		10-20		20		1	1	strategic	right-of-way
+
+case_20:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+100		10-20		20		1	1	strategic	right-of-way
+
+case_21:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+700		10-20		30		1	1	strategic	right-of-way
+
+case_22:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+500		10-20		30		1	1	strategic	right-of-way
+
+case_23:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+300		10-20		30		1	1	strategic	right-of-way
+
+case_24:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+200		10-20		30		1	1	strategic	right-of-way
+
+case_25:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+100		10-20		30		1	1	strategic	right-of-way
+
+case_26:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+700		10-20		40		1	1	strategic	right-of-way
+
+case_27:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+500		10-20		40		1	1	strategic	right-of-way
+
+case_28:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+300		10-20		40		1	1	strategic	right-of-way
+
+case_29:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+200		10-20		40		1	1	strategic	right-of-way
+
+case_30:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+100		10-20		40		1	1	strategic	right-of-way
+
+case_31:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+700		20-30		20		1	1	strategic	right-of-way
+
+case_32:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+500		20-30		20		1	1	strategic	right-of-way
+
+case_33:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+300		20-30		20		1	1	strategic	right-of-way
+
+case_34:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+200		20-30		20		1	1	strategic	right-of-way
+
+case_35:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+100		20-30		20		1	1	strategic	right-of-way
+
+case_36:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+700		20-30		30		1	1	strategic	right-of-way
+
+case_37:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+500		20-30		30		1	1	strategic	right-of-way
+
+case_38:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+300		20-30		30		1	1	strategic	right-of-way
+
+case_39:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+200		20-30		30		1	1	strategic	right-of-way
+
+case_40:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+100		20-30		30		1	1	strategic	right-of-way
+
+case_41:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+700		20-30		40		1	1	strategic	right-of-way
+
+case_42:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+500		20-30		40		1	1	strategic	right-of-way
+
+case_43:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+300		20-30		40		1	1	strategic	right-of-way
+
+case_44:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+200		20-30		40		1	1	strategic	right-of-way
+
+case_45:
+FLOW_RATE	human_speed	rl_speed	T	a	lanechange	carfollow
+100		20-30		40		1	1	strategic	right-of-way
+
+**************************
+Additional parameter tests
+**************************
+
+
