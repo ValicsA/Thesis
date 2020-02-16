@@ -15,51 +15,53 @@ from flow.core.params import NetParams, SumoCarFollowingParams, SumoLaneChangePa
 from flow.envs.ring.accel import ADDITIONAL_ENV_PARAMS, AccelEnv
 from flow.networks import Network
 
-ADDITIONAL_NET_PARAMS = {
-    "num_lanes": 3,
-    "speed_limit": 40
-}
-# inflow rate at the highway
-FLOW_RATE = 200
 
+class Inflow:
 
-inflow = InFlows()
-inflow.add(
-    veh_type="traffic_slow",
-    edge="edge1",
-    vehs_per_hour=FLOW_RATE,
-    depart_lane=0,
-    depart_speed="random")
-inflow.add(
-    veh_type="traffic_slow",
-    edge="edge1",
-    vehs_per_hour=FLOW_RATE,
-    depart_lane=1,
-    depart_speed="random")
-inflow.add(
-    veh_type="traffic_slow",
-    edge="edge1",
-    vehs_per_hour=FLOW_RATE * 0.1,
-    depart_lane=2,
-    depart_speed="random")
-inflow.add(
-    veh_type="traffic_fast",
-    edge="edge1",
-    vehs_per_hour=FLOW_RATE * 0.1,
-    depart_lane=0,
-    depart_speed="random")
-inflow.add(
-    veh_type="traffic_fast",
-    edge="edge1",
-    vehs_per_hour=FLOW_RATE,
-    depart_lane=1,
-    depart_speed="random")
-inflow.add(
-    veh_type="traffic_fast",
-    edge="edge1",
-    vehs_per_hour=FLOW_RATE,
-    depart_lane=2,
-    depart_speed="random")
+    def __init__(self, flow_rate, vehicle_types):
+        self.flow_rate = flow_rate
+        self.vehicle_types = vehicle_types
+
+    def create_inflow(self):
+
+        inflow = InFlows()
+        inflow.add(
+            veh_type=self.vehicle_types[1],
+            edge="edge1",
+            vehs_per_hour=self.flow_rate,
+            depart_lane=0,
+            depart_speed="random")
+        inflow.add(
+            veh_type=self.vehicle_types[1],
+            edge="edge1",
+            vehs_per_hour=self.flow_rate,
+            depart_lane=1,
+            depart_speed="random")
+        inflow.add(
+            veh_type=self.vehicle_types[1],
+            edge="edge1",
+            vehs_per_hour=self.flow_rate * 0.1,
+            depart_lane=2,
+            depart_speed="random")
+        inflow.add(
+            veh_type=self.vehicle_types[2],
+            edge="edge1",
+            vehs_per_hour=self.flow_rate * 0.1,
+            depart_lane=0,
+            depart_speed="random")
+        inflow.add(
+            veh_type=self.vehicle_types[2],
+            edge="edge1",
+            vehs_per_hour=self.flow_rate,
+            depart_lane=1,
+            depart_speed="random")
+        inflow.add(
+            veh_type=self.vehicle_types[2],
+            edge="edge1",
+            vehs_per_hour=self.flow_rate,
+            depart_lane=2,
+            depart_speed="random")
+        return inflow
 
 
 class MyNetwork(Network):
@@ -146,66 +148,108 @@ class MyNetwork(Network):
         return edgestarts
 
 
-name = "example"
+class Vehicles:
 
-vehicles = VehicleParams()
+    def __init__(self, vehicle_types, vehicle_speeds, lane_change_modes):
+        self.vehicle_types = vehicle_types
+        self.vehicle_speeds = vehicle_speeds
+        self.lane_change_modes = lane_change_modes
+
+    def create_vehicles(self):
+        vehicles = VehicleParams()
+
+        vehicles.add(self.vehicle_types[1],
+                     acceleration_controller=(IDMController, {"v0": self.vehicle_speeds[1]}),
+                     routing_controller=(ContinuousRouter, {}),
+                     car_following_params=SumoCarFollowingParams(),
+                     lane_change_params=SumoLaneChangeParams(lane_change_mode=self.lane_change_modes[1]),
+                     num_vehicles=0)
+
+        vehicles.add(self.vehicle_types[2],
+                     acceleration_controller=(IDMController, {"v0": self.vehicle_speeds[2]}),
+                     routing_controller=(ContinuousRouter, {}),
+                     car_following_params=SumoCarFollowingParams(),
+                     lane_change_params=SumoLaneChangeParams(lane_change_mode=self.lane_change_modes[2]),
+                     num_vehicles=0)
+
+        vehicles.add(self.vehicle_types[0],
+                     acceleration_controller=(IDMController, {"v0": self.vehicle_speeds[0]}),
+                     routing_controller=(ContinuousRouter, {}),
+                     car_following_params=SumoCarFollowingParams(),
+                     lane_change_params=SumoLaneChangeParams(lane_change_mode=self.lane_change_modes[0]),
+                     num_vehicles=3)
+        return vehicles
 
 
-vehicles.add("traffic_slow",
-             acceleration_controller=(IDMController, {"v0": 15}),
-             routing_controller=(ContinuousRouter, {}),
-             car_following_params=SumoCarFollowingParams(),
-             lane_change_params=SumoLaneChangeParams(lane_change_mode="strategic"),
-             num_vehicles=0)
+def run_experiment():
 
-vehicles.add("traffic_fast",
-             acceleration_controller=(IDMController, {"v0": 30}),
-             routing_controller=(ContinuousRouter, {}),
-             car_following_params=SumoCarFollowingParams(),
-             lane_change_params=SumoLaneChangeParams(lane_change_mode="strategic"),
-             num_vehicles=0)
+    parameters = create_parameters()
+    additional_net_params = parameters["additional_net_params"]
+    flow_rate = parameters["flow_rate"]
+    name = parameters["name"]
+    vehicle_types = parameters["vehicle_types"]
+    vehicle_speeds = parameters["vehicle_speeds"]
+    lane_change_modes = parameters["lane_change_modes"]
+    experiment_len = parameters["experiment_len"]
+    emission_path = parameters["emission_path"]
 
-vehicles.add("rl",
-             acceleration_controller=(IDMController, {"v0": 40}),
-             routing_controller=(ContinuousRouter, {}),
-             car_following_params=SumoCarFollowingParams(),
-             lane_change_params=SumoLaneChangeParams(lane_change_mode="strategic"),
-             num_vehicles=3)
+    inflow_c = Inflow(flow_rate=flow_rate, vehicle_types=vehicle_types)
+    inflow = inflow_c.create_inflow()
 
-# ADDITIONAL_NET_PARAMS["lanes"] = 2
-additional_net_params = ADDITIONAL_NET_PARAMS.copy()
-net_params = NetParams(additional_params=additional_net_params, inflows=inflow)
+    net_params = NetParams(additional_params=additional_net_params, inflows=inflow)
+
+    initial_config = InitialConfig(spacing="random", perturbation=1, edges_distribution=["edge0"])
+    traffic_lights = TrafficLightParams()
+
+    sim_params = SumoParams(sim_step=1, render=True, emission_path=emission_path, restart_instance=True, overtake_right=False)
+
+    env_params = EnvParams(additional_params=ADDITIONAL_ENV_PARAMS)
+
+    vehicle_c = Vehicles(vehicle_types=vehicle_types, vehicle_speeds=vehicle_speeds, lane_change_modes=lane_change_modes)
+    vehicles = vehicle_c.create_vehicles()
+
+    flow_params = dict(
+        exp_tag=name,
+        env_name=AccelEnv,
+        network=MyNetwork,
+        simulator='traci',
+        sim=sim_params,
+        env=env_params,
+        net=net_params,
+        veh=vehicles,
+        initial=initial_config,
+        tls=traffic_lights
+    )
+
+    # number of time steps
+    flow_params['env'].horizon = experiment_len
+    exp = Experiment(flow_params)
+
+    # run the sumo simulation
+    _ = exp.run(1, convert_to_csv=True)
+
+    emission_location = os.path.join(exp.env.sim_params.emission_path, exp.env.network.name)
+    print(emission_location + '-emission.xml')
+
+    pd.read_csv(emission_location + '-emission.csv')
 
 
-initial_config = InitialConfig(spacing="random", perturbation=1, edges_distribution=["edge0"])
+def create_parameters():
+    parameters = {
+        "additional_net_params": {
+            "num_lanes": 3,
+            "speed_limit": 40
+        },
+        "flow_rate": 200,
+        "name": "highway",
+        "vehicle_types": ["rl", "traffic_slow", "traffic_fast"],
+        "vehicle_speeds": [40, 15, 20],
+        "lane_change_modes": ["strategic", "strategic", "strategic"],
+        "experiment_len": 1000,
+        "emission_path": "data",
+    }
+    return parameters
 
-traffic_lights = TrafficLightParams()
 
-sim_params = SumoParams(sim_step=1, render=True, emission_path='data', restart_instance=True, overtake_right=False)
-
-env_params = EnvParams(additional_params=ADDITIONAL_ENV_PARAMS)
-
-flow_params = dict(
-    exp_tag='highway',
-    env_name=AccelEnv,
-    network=MyNetwork,
-    simulator='traci',
-    sim=sim_params,
-    env=env_params,
-    net=net_params,
-    veh=vehicles,
-    initial=initial_config,
-    tls=traffic_lights
-)
-
-# number of time steps
-flow_params['env'].horizon = 1000
-exp = Experiment(flow_params)
-
-# run the sumo simulation
-_ = exp.run(1, convert_to_csv=True)
-
-emission_location = os.path.join(exp.env.sim_params.emission_path, exp.env.network.name)
-print(emission_location + '-emission.xml')
-
-pd.read_csv(emission_location + '-emission.csv')
+if __name__ == '__main__':
+    run_experiment()
