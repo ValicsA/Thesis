@@ -240,12 +240,12 @@ def create_parameters():
             "num_lanes": 3,
             "speed_limit": 40
         },
-        "flow_rate": 200,
-        "name": "highway",
+        "flow_rate": 100,
+        "name": "highway_case_00",
         "vehicle_types": ["rl", "traffic_slow", "traffic_fast"],
-        "vehicle_speeds": [40, 15, 20],
+        "vehicle_speeds": [40, 20, 30],
         "lane_change_modes": ["strategic", "strategic", "strategic"],
-        "experiment_len": 1000,
+        "experiment_len": 500,
         "emission_path": "data",
     }
     return parameters
