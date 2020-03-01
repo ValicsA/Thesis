@@ -87,6 +87,12 @@ class Plotter:
                         self.d[row[6]]["y"] = np.append(self.d[row[6]]["y"], float(row[2]))
                         self.d[row[6]]["x"] = np.append(self.d[row[6]]["x"], float(row[12]))
 
+    def fix_zero_emissions(self):
+        for vehicles_keys, vehicles_values in self.d.items():
+            for keys, values in vehicles_values.items():
+                for i in range(1, len(values)):
+                    self.d[vehicles_keys][keys][i] = self.d[vehicles_keys][keys][i] if self.d[vehicles_keys][keys][i] > 0 else self.d[vehicles_keys][keys][i-1]*0.99
+
     def calculate_average(self):
         start = int(max(min(self.d["rl_0"]["time"]), min(self.d["rl_1"]["time"]), min(self.d["rl_2"]["time"])))
         end = int(min(max(self.d["rl_0"]["time"]), max(self.d["rl_1"]["time"]), max(self.d["rl_2"]["time"])))
