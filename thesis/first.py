@@ -14,7 +14,7 @@ from flow.core.params import NetParams, SumoCarFollowingParams, SumoLaneChangePa
     TrafficLightParams, VehicleParams, SumoParams, EnvParams
 from flow.envs.ring.accel import ADDITIONAL_ENV_PARAMS, AccelEnv
 from flow.networks import Network
-
+import numpy as np
 
 class Inflow:
 
@@ -181,9 +181,9 @@ class Vehicles:
         return vehicles
 
 
-def run_experiment():
+def run_experiment(parameters):
 
-    parameters = create_parameters()
+    # parameters = create_parameters()
     additional_net_params = parameters["additional_net_params"]
     flow_rate = parameters["flow_rate"]
     name = parameters["name"]
@@ -234,16 +234,16 @@ def run_experiment():
     pd.read_csv(emission_location + '-emission.csv')
 
 
-def create_parameters():
+def create_parameters(case_num, flow, human_speed, rl_speed):
     parameters = {
         "additional_net_params": {
             "num_lanes": 3,
             "speed_limit": 40
         },
-        "flow_rate": 100,
-        "name": "highway_case_00",
+        "flow_rate": flow,
+        "name": f"highway_case_{case_num}",
         "vehicle_types": ["rl", "traffic_slow", "traffic_fast"],
-        "vehicle_speeds": [40, 20, 30],
+        "vehicle_speeds": [rl_speed, human_speed[0], human_speed[1]],
         "lane_change_modes": ["strategic", "strategic", "strategic"],
         "experiment_len": 500,
         "emission_path": "data",
@@ -252,4 +252,13 @@ def create_parameters():
 
 
 if __name__ == '__main__':
-    run_experiment()
+    flows = [700, 500, 300, 200, 100, 10]
+    human_speeds = [[15, 30], [10, 20], [20, 30]]
+    rl_speeds = [20, 30, 40]
+    i = 0
+    for human_speed in human_speeds:
+        for rl_speed in rl_speeds:
+            for flow in flows:
+                parameters = create_parameters(case_num=i, flow=flow, human_speed=human_speed, rl_speed=rl_speed)
+                run_experiment(parameters)
+                i += 1
