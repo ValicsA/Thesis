@@ -5,6 +5,7 @@ Description
 """
 
 import os
+import warnings
 
 import pandas as pd
 from flow.controllers.car_following_models import IDMController
@@ -14,7 +15,7 @@ from flow.core.params import NetParams, SumoCarFollowingParams, SumoLaneChangePa
     TrafficLightParams, VehicleParams, SumoParams, EnvParams
 from flow.envs.ring.accel import ADDITIONAL_ENV_PARAMS, AccelEnv
 from flow.networks import Network
-import numpy as np
+
 
 class Inflow:
 
@@ -72,8 +73,8 @@ class MyNetwork(Network):
                  {"id": "node_ego1", "x": -300, "y": 0},
                  {"id": "node_in", "x": 0, "y": 0},
                  {"id": "node_middle_in", "x": 200, "y": 0},
-                 {"id": "node_middle_out", "x": 2200, "y": 0},
-                 {"id": "node_out", "x": 2400, "y": 0}]
+                 {"id": "node_middle_out", "x": 5200, "y": 0},
+                 {"id": "node_out", "x": 5400, "y": 0}]
 
         return nodes
 
@@ -114,7 +115,7 @@ class MyNetwork(Network):
                 "speed": speed_limit,
                 "from": "node_middle_in",
                 "to": "node_middle_out",
-                "length": 2000
+                "length": 5000
             },
             {
                 "id": "edge3",
@@ -143,7 +144,7 @@ class MyNetwork(Network):
                       ("edge01", -100),
                       ("edge1", 0),
                       ("edge2", 200),
-                      ("edge3", 2200)]
+                      ("edge3", 5200)]
 
         return edgestarts
 
@@ -183,7 +184,6 @@ class Vehicles:
 
 def run_experiment(parameters):
 
-    # parameters = create_parameters()
     additional_net_params = parameters["additional_net_params"]
     flow_rate = parameters["flow_rate"]
     name = parameters["name"]
@@ -251,14 +251,29 @@ def create_parameters(case_num, flow, human_speed, rl_speed):
     return parameters
 
 
+def main(mode):
+    """
+    Runs simulations with defined conditions.
+    :param mode: if equals "basic_simulations" 45 basic cases
+                 if equals "additional_simulations" pass
+    return: None
+    """
+    if mode == "basic_simulations":
+        flows = [700, 500, 300, 200, 100]
+        human_speeds = [[15, 30], [10, 20], [20, 30]]
+        rl_speeds = [20, 30, 40]
+        i = 1
+        for human_speed in human_speeds:
+            for rl_speed in rl_speeds:
+                for flow in flows:
+                    parameters = create_parameters(case_num=i, flow=flow, human_speed=human_speed, rl_speed=rl_speed)
+                    run_experiment(parameters)
+                    i += 1
+    elif mode == "additional_simulations":
+        pass
+    else:
+        warnings.warn("Not supported simulation mode!")
+
+
 if __name__ == '__main__':
-    flows = [700, 500, 300, 200, 100, 10]
-    human_speeds = [[15, 30], [10, 20], [20, 30]]
-    rl_speeds = [20, 30, 40]
-    i = 0
-    for human_speed in human_speeds:
-        for rl_speed in rl_speeds:
-            for flow in flows:
-                parameters = create_parameters(case_num=i, flow=flow, human_speed=human_speed, rl_speed=rl_speed)
-                run_experiment(parameters)
-                i += 1
+    main(mode="basic_simulations")
