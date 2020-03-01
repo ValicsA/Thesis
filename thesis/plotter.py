@@ -9,9 +9,10 @@ import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 from matplotlib.ticker import StrMethodFormatter
 
+
 class Plotter:
 
-    def __init__(self):
+    def __init__(self, folder_name):
         self.basic_dict = {
                 "time": np.array([]),
                 "CO": np.array([]),
@@ -63,6 +64,7 @@ class Plotter:
             "x": "[m]",
         }
         self.d_plot = self.basic_dict.copy()
+        self.folder_name = folder_name
 
     def read_file(self, filename):
         with open(filename) as results_csv:
@@ -173,7 +175,7 @@ class Plotter:
                 for d2_key, d2_value in d1_value.items():
                     print(f"{d_key}'s {d1_key} {d2_key}: {self.d_results[d_key][d1_key][d2_key]}")
                     # print(f"{d_key}'s sum {d2_key}: {self.d_results[d_key]['sum'][d2_key]}")
-                    with open("results.csv", mode="a") as write_results_file:
+                    with open(f"/home/akos/workspace/Thesis/thesis/data/{self.folder_name}/results.csv", mode="a") as write_results_file:
                         results_writer = csv.writer(write_results_file, delimiter=",", lineterminator="\n")
                         results_writer.writerow([d2_key, d2_value])
                         # results_writer.writerow([self.d_results['sum'][key]])
@@ -184,7 +186,7 @@ class Plotter:
             for r1_key, r1_value in r_value.items():
                 print(f"{r_key} {r1_key} is {self.d_results_all[r_key][r1_key]}")
                 # print(f"Overall average sum {r_key} is {self.d_results['sum_all'][r_key]}")
-                with open("results_all.csv", mode="a") as write_results_file:
+                with open(f"/home/akos/workspace/Thesis/thesis/data/{self.folder_name}/results_all.csv", mode="a") as write_results_file:
                     results_writer = csv.writer(write_results_file, delimiter=",", lineterminator="\n")
                     results_writer.writerow([r1_key, r1_value])
                     # results_writer.writerow([self.d_results['sum_all'][r_key]])
@@ -277,29 +279,34 @@ class Plotter:
 
 
 def main(mode):
-    plotter = Plotter()
-    plotter.read_file(
-        filename=f"/home/akos/workspace/Thesis/thesis/data/20200217_first_results/highway_case_4_emission.csv")
-    plotter.calculate_average()
-    plotter.plot_results(
-        filename=f"/home/akos/workspace/Thesis/thesis/data/20200217_first_results/plots/Plot_Case_000_")
-    # if mode == "generate":
-    #     for a in range(1, 46):
-    #         plotter = Plotter()
-    #         plotter.read_file(filename=f"/home/akos/workspace/Thesis/thesis/data/20200217_first_results/highway_case_{a}_emission.csv")
-    #         plotter.calculate_average()
-    #         plotter.plot_results(filename=f"/home/akos/workspace/Thesis/thesis/data/20200217_first_results/plots/Plot_Case_{a}_")
-    #
-    # elif mode == "plot":
-    #     filename = "/home/akos/workspace/Thesis/thesis/results_all.csv"
-    #     cases = ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15"]
-    #     plotter = Plotter()
-    #     # plotter.plot_cases(filename=filename, cases=cases, data="fuel")
-    #     plotter.plot_difference(filename=filename, data="fuel")
+    # plotter = Plotter()
+    # plotter.read_file(
+    #     filename=f"/home/akos/workspace/Thesis/thesis/data/20200217_first_results/highway_case_4_emission.csv")
+    # plotter.fix_zero_emissions()
+    # plotter.calculate_average()
+    # plotter.plot_results(
+    #     filename=f"/home/akos/workspace/Thesis/thesis/data/20200217_first_results/plots/Plot_Case_000_")
+    folder_name = "20200301"
+    if mode == "generate":
+        for a in range(1, 46):
+            plotter = Plotter(folder_name=folder_name)
+            plotter.read_file(filename=f"/home/akos/workspace/Thesis/thesis/data/"
+                                       f"{folder_name}/highway_case_{a}_emission.csv")
+            plotter.fix_zero_emissions()
+            plotter.calculate_average()
+            plotter.plot_results(filename=f"/home/akos/workspace/Thesis/thesis/data/"
+                                          f"{folder_name}/plots/Plot_Case_{a}_")
+
+    elif mode == "plot":
+        filename = "/home/akos/workspace/Thesis/thesis/results_all.csv"
+        cases = ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15"]
+        plotter = Plotter(folder_name=folder_name)
+        # plotter.plot_cases(filename=filename, cases=cases, data="fuel")
+        plotter.plot_difference(filename=filename, data="fuel")
 
 
 if __name__ == "__main__":
 
-    main(mode="plot")
+    main(mode="generate")
 
     print("End")
