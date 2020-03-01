@@ -83,8 +83,8 @@ class Plotter:
                         self.d[row[6]]["noise"] = np.append(self.d[row[6]]["noise"], float(row[15]))
                         self.d[row[6]]["PMx"] = np.append(self.d[row[6]]["PMx"], float(row[17]))
                         self.d[row[6]]["speed"] = np.append(self.d[row[6]]["speed"], float(row[18]))
-                        self.d[row[6]]["y"] = np.append(self.d[row[6]]["speed"], float(row[2]))
-                        self.d[row[6]]["x"] = np.append(self.d[row[6]]["speed"], float(row[12]))
+                        self.d[row[6]]["y"] = np.append(self.d[row[6]]["y"], float(row[2]))
+                        self.d[row[6]]["x"] = np.append(self.d[row[6]]["x"], float(row[12]))
 
     def calculate_average(self):
         start = int(max(min(self.d["rl_0"]["time"]), min(self.d["rl_1"]["time"]), min(self.d["rl_2"]["time"])))
@@ -122,7 +122,7 @@ class Plotter:
             plt.plot(self.d_plot["time"], r_value)
             plt.xlabel("time " + self.dimensions["time"])
             plt.ylabel(r_key + " " + self.dimensions[r_key])
-            plt.title("Time - " + r_key)
+            plt.title("time - " + r_key)
             plt.savefig(filename + "time_" + r_key)
             # plt.yticks(np.arange(min(d["rl_0"]["fuel"]), max(d["rl_0"]["fuel"])+1, 0.5))
             plt.show()
@@ -143,18 +143,16 @@ class Plotter:
             for r1_key, r1_value in r_value.items():
                 print(f"{r_key} {r1_key} is {self.d_results_all[r_key][r1_key]}")
                 # print(f"Overall average sum {r_key} is {self.d_results['sum_all'][r_key]}")
-                with open("results.csv", mode="a") as write_results_file:
+                with open("results_all.csv", mode="a") as write_results_file:
                     results_writer = csv.writer(write_results_file, delimiter=",", lineterminator="\n")
-                    results_writer.writerow([self.d_results_all[r_key][r1_key]])
+                    results_writer.writerow([r1_key, r1_value])
                     # results_writer.writerow([self.d_results['sum_all'][r_key]])
 
-    def plot_cases(self, filename, cases, data_index):
+    def plot_cases(self, filename, cases, data):
 
-        data_index = 78 + data_index
-        counter = 1
         means = np.array([])
         with open(filename, mode="r") as results_csv:
-            results = csv.reader(results_csv, delimiter=',')
+            results = csv.reader(results_csv)
 
             for row in results:
                 if counter % data_index == 0:
