@@ -13,6 +13,11 @@ from matplotlib.ticker import StrMethodFormatter
 class Plotter:
 
     def __init__(self, folder_name):
+        """
+        Initializer of Plotter class. Creates class variables.
+
+        :param folder_name: Name of the folder where the measurements are located.
+        """
         self.basic_dict = {
                 "time": np.array([]),
                 "CO": np.array([]),
@@ -67,6 +72,13 @@ class Plotter:
         self.folder_name = folder_name
 
     def read_file(self, filename):
+        """
+        Reads the measurement file and saves the relevant results to a dictionary.
+
+        :param filename: Path and name of the measurement file.
+
+        :return None
+        """
         with open(filename) as results_csv:
             results = csv.reader(results_csv, delimiter=',')
             line_count = 0
@@ -90,12 +102,21 @@ class Plotter:
                         self.d[row[6]]["x"] = np.append(self.d[row[6]]["x"], float(row[12]))
 
     def fix_zero_emissions(self):
+        """
+        Corrects zero emission values in measurement. Multiplies the previous value by 0.99.
+        """
         for vehicles_keys, vehicles_values in self.d.items():
             for keys, values in vehicles_values.items():
                 for i in range(1, len(values)):
-                    self.d[vehicles_keys][keys][i] = self.d[vehicles_keys][keys][i] if self.d[vehicles_keys][keys][i] > 0 else self.d[vehicles_keys][keys][i-1]*0.99
+                    self.d[vehicles_keys][keys][i] = self.d[vehicles_keys][keys][i]\
+                        if self.d[vehicles_keys][keys][i] > 0 else self.d[vehicles_keys][keys][i-1]*0.99
 
     def calculate_average(self):
+        """
+        Calculates the average values for every rl vehicle respectively and for all vehicles too.
+        self.d_results contains average values for every vehicle respectively.
+        self.d_results_all contains average values for all vehicles.
+        """
         start = int(max(min(self.d["rl_0"]["time"]), min(self.d["rl_1"]["time"]), min(self.d["rl_2"]["time"])))
         end = int(min(max(self.d["rl_0"]["time"]), max(self.d["rl_1"]["time"]), max(self.d["rl_2"]["time"])))
         diff = end - start
@@ -113,14 +134,21 @@ class Plotter:
                 self.d_results[d_key]["sum"][key] = np.sum(value)
 
         for key, value in self.basic_dict.items():
-            self.d_results_all["avr_all"][key] = np.average([self.d_results["rl_0"]["avr"][key], self.d_results["rl_1"]["avr"][key], self.d_results["rl_2"]["avr"][key]])
-            self.d_results_all["sum_all"][key] = np.sum([self.d_results["rl_0"]["sum"][key], self.d_results["rl_1"]["sum"][key], self.d_results["rl_2"]["sum"][key]])
+            self.d_results_all["avr_all"][key] = np.average([self.d_results["rl_0"]["avr"][key],
+                                                             self.d_results["rl_1"]["avr"][key],
+                                                             self.d_results["rl_2"]["avr"][key]])
+            self.d_results_all["sum_all"][key] = np.sum([self.d_results["rl_0"]["sum"][key],
+                                                         self.d_results["rl_1"]["sum"][key],
+                                                         self.d_results["rl_2"]["sum"][key]])
 
         # for r_key, r_value in self.results_average.items():
         #     self.d_results["avr_all"][r_key] = np.average(r_value)
         #     self.d_results["sum_all"][r_key] = np.sum(r_value)
 
     def plot_results(self, filename):
+        """
+        Plots the results and save the results to a folder.
+        """
         # plt.plot(self.d["rl_0"]["time"], self.d["rl_0"]["fuel"])
         # plt.plot(self.d["rl_1"]["time"], self.d["rl_1"]["fuel"])
         # plt.plot(self.d["rl_2"]["time"], self.d["rl_2"]["fuel"])
@@ -175,7 +203,8 @@ class Plotter:
                 for d2_key, d2_value in d1_value.items():
                     print(f"{d_key}'s {d1_key} {d2_key}: {self.d_results[d_key][d1_key][d2_key]}")
                     # print(f"{d_key}'s sum {d2_key}: {self.d_results[d_key]['sum'][d2_key]}")
-                    with open(f"/home/akos/workspace/Thesis/thesis/data/{self.folder_name}/results.csv", mode="a") as write_results_file:
+                    with open(f"/home/akos/workspace/Thesis/thesis/data/{self.folder_name}/results.csv", mode="a")\
+                            as write_results_file:
                         results_writer = csv.writer(write_results_file, delimiter=",", lineterminator="\n")
                         results_writer.writerow([d2_key, d2_value])
                         # results_writer.writerow([self.d_results['sum'][key]])
@@ -186,23 +215,17 @@ class Plotter:
             for r1_key, r1_value in r_value.items():
                 print(f"{r_key} {r1_key} is {self.d_results_all[r_key][r1_key]}")
                 # print(f"Overall average sum {r_key} is {self.d_results['sum_all'][r_key]}")
-                with open(f"/home/akos/workspace/Thesis/thesis/data/{self.folder_name}/results_all.csv", mode="a") as write_results_file:
+                with open(f"/home/akos/workspace/Thesis/thesis/data/{self.folder_name}/results_all.csv", mode="a")\
+                        as write_results_file:
                     results_writer = csv.writer(write_results_file, delimiter=",", lineterminator="\n")
                     results_writer.writerow([r1_key, r1_value])
                     # results_writer.writerow([self.d_results['sum_all'][r_key]])
 
     def plot_cases(self, filename, cases, data):
-
-        means = np.array([])
-        with open(filename, mode="r") as results_csv:
-            results = csv.reader(results_csv)
-
-            for row in results:
-                # if counter % data_index == 0:
-                means = np.append(means, [row[0], float(row[1])])
-                # else:
-                    # counter += 1
-        means = np.reshape(means, (int(len(means)/2), 2))
+        """
+        Plots the data variable in different test cases.
+        """
+        means = self._read_mean_results(filename=filename)
         pl = np.array([])
         for i in range(means.shape[0]):
             if means[i, 0] == data:
@@ -220,14 +243,25 @@ class Plotter:
 
         plt.show()
 
-    def plot_difference(self, filename, data):
-        barWidth = 0.2
+    @ staticmethod
+    def _read_mean_results(filename):
+        """
+        Reads results from a file and loads them into a numpy array.
+        """
         means = np.array([])
         with open(filename, mode="r") as results_csv:
             results = csv.reader(results_csv)
             for row in results:
                 means = np.append(means, [row[0], float(row[1])])
         means = np.reshape(means, (int(len(means) / 2), 2))
+        return means
+
+    def plot_difference(self, filename, data):
+        """
+        Plots the difference between test cases in case of data variable.
+        """
+        bar_width = 0.2
+        means = self._read_mean_results(filename=filename)
         pl_data = np.array([])
         pl_speed = np.array([])
         for i in range(means.shape[0]):
@@ -245,20 +279,20 @@ class Plotter:
         bar3 = pl_data[10:15].astype(float)
 
         r1 = np.arange(len(bar1))
-        r2 = [x2 + barWidth for x2 in r1]
-        r3 = [x3 + barWidth*2 for x3 in r1]
+        r2 = [x2 + bar_width for x2 in r1]
+        r3 = [x3 + bar_width*2 for x3 in r1]
         r4 = np.append(np.append(r1, r2), r3)
 
         pl_speed = np.round(pl_speed.astype(float), 1)
         pl_data1 = np.around(pl_data.astype(float)).astype(int)
 
-        plt.bar(r1, bar1, width=barWidth, color='blue', edgecolor='black', label='20 m/s')
-        plt.bar(r2, bar2, width=barWidth, color='cyan', edgecolor='black', label='30 m/s')
-        plt.bar(r3, bar3, width=barWidth, color='red', edgecolor='black', label='40 m/s')
+        plt.bar(r1, bar1, width=bar_width, color='blue', edgecolor='black', label='20 m/s')
+        plt.bar(r2, bar2, width=bar_width, color='cyan', edgecolor='black', label='30 m/s')
+        plt.bar(r3, bar3, width=bar_width, color='red', edgecolor='black', label='40 m/s')
 
         for i in range(len(r4)):
             plt.text(x=r4[i]-0.07, y=pl_data1[i]+3700, s=f"v = {pl_speed[i]}", color='black', rotation=90)
-        plt.xticks([r + barWidth for r in range(len(bar1))], ['700', '500', '300', '200', '100'])
+        plt.xticks([r + bar_width for r in range(len(bar1))], ['700', '500', '300', '200', '100'])
         plt.ylabel("Value")
         plt.xlabel("Float rate [veh/h]")
         plt.title(f"{data}")
@@ -279,6 +313,11 @@ class Plotter:
 
 
 def main(mode):
+    """
+    Main function of plotter.py. Calls Plotter class and its functions according to it's mode.
+    Generate mode: Create plots for every case respectively.
+    Plot mode: Create plots which shows difference between test cases.
+    """
     # plotter = Plotter()
     # plotter.read_file(
     #     filename=f"/home/akos/workspace/Thesis/thesis/data/20200217_first_results/highway_case_4_emission.csv")
