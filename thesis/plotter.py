@@ -311,6 +311,45 @@ class Plotter:
 
         plt.show()
 
+    def plot_same_flow_different_cases(self, filename, data):
+        bar_width = 0.3
+        means = self._read_mean_results(filename=filename)
+        pl_data = np.array([])
+        for i in range(means.shape[0]):
+            if means[i, 0] == data:
+                pl_data = np.append(pl_data, means[i, 1])
+        pl_data = pl_data[1::2]
+        pl_data = pl_data[::5]
+
+        bar = pl_data.astype(float)
+
+        r = np.arange(len(bar))
+
+        pl_data1 = np.around(pl_data.astype(float)).astype(int)
+
+        plt.bar(r, bar, width=bar_width, color='yellow', edgecolor='black', label='20 m/s')
+
+        for i in range(len(r)):
+            plt.text(x=r[i] - 0.05, y=pl_data1[i], s=f"v = haha", color='black', rotation=90)
+        plt.xticks([r for r in range(len(bar))], ['1', '6', '11', '16', '21', '26', '31', '36', '41'])
+        plt.ylabel("Value")
+        plt.xlabel("Case")
+        plt.title(f"{data}")
+        plt.legend()
+
+        plt.show()
+
+        # pl_data = pl_data.astype(float)
+        # pl_speed = pl_speed.astype(float)
+        # pl_speed, pl_data = zip(*sorted(zip(pl_speed, pl_data)))
+        #
+        # plt.plot(pl_speed, pl_data)
+        # plt.ylabel(f"{data} {self.dimensions[data]}")
+        # plt.xlabel("Speed [m/s]")
+        # plt.title(f"{data}")
+        #
+        # plt.show()
+
 
 def main(mode):
     """
