@@ -176,7 +176,7 @@ class Vehicles:
         vehicles.add(self.vehicle_types[0],
                      acceleration_controller=(IDMController, {"v0": self.vehicle_speeds[0]}),
                      routing_controller=(ContinuousRouter, {}),
-                     car_following_params=SumoCarFollowingParams(),
+                     car_following_params=SumoCarFollowingParams(max_speed=self.vehicle_speeds[0]),
                      lane_change_params=SumoLaneChangeParams(lane_change_mode=self.lane_change_modes[0]),
                      num_vehicles=3)
         return vehicles
@@ -244,7 +244,7 @@ def create_parameters(case_num, flow, human_speed, rl_speed):
         "name": f"highway_case_{case_num}",
         "vehicle_types": ["rl", "traffic_slow", "traffic_fast"],
         "vehicle_speeds": [rl_speed, human_speed[0], human_speed[1]],
-        "lane_change_modes": ["strategic", "strategic", "strategic"],
+        "lane_change_modes": ["aggressive", "strategic", "strategic"],
         "experiment_len": 500,
         "emission_path": "data",
     }
@@ -270,10 +270,23 @@ def main(mode):
                     run_experiment(parameters)
                     i += 1
     elif mode == "additional_simulations":
-        pass
+        # vehicles.add acceleration controller "T": 0.5, i=46
+        # vehicles.add acceleration controller "a": 2, i=58
+        # parameters "lane_change_modes": ["aggressive", "strategic", "strategic"], i=70
+        flows = [700, 300, 100]
+        human_speeds = [[20, 30], [10, 20]]
+        rl_speeds = [40, 30]
+        i = 70
+        for human_speed in human_speeds:
+            for rl_speed in rl_speeds:
+                for flow in flows:
+                    parameters = create_parameters(case_num=i, flow=flow, human_speed=human_speed, rl_speed=rl_speed)
+                    run_experiment(parameters)
+                    i += 1
+
     else:
         warnings.warn("Not supported simulation mode!")
 
 
 if __name__ == '__main__':
-    main(mode="basic_simulations")
+    main(mode="additional_simulations")

@@ -137,9 +137,9 @@ class Plotter:
             self.d_results_all["avr_all"][key] = np.average([self.d_results["rl_0"]["avr"][key],
                                                              self.d_results["rl_1"]["avr"][key],
                                                              self.d_results["rl_2"]["avr"][key]])
-            self.d_results_all["sum_all"][key] = np.sum([self.d_results["rl_0"]["sum"][key],
-                                                         self.d_results["rl_1"]["sum"][key],
-                                                         self.d_results["rl_2"]["sum"][key]])
+            self.d_results_all["sum_all"][key] = np.average([self.d_results["rl_0"]["sum"][key],
+                                                             self.d_results["rl_1"]["sum"][key],
+                                                             self.d_results["rl_2"]["sum"][key]])
 
         # for r_key, r_value in self.results_average.items():
         #     self.d_results["avr_all"][r_key] = np.average(r_value)
@@ -178,9 +178,9 @@ class Plotter:
         plt.plot(self.d["rl_0"]["time"], self.d["rl_0"]["fuel"])
         plt.plot(self.d["rl_1"]["time"], self.d["rl_1"]["fuel"])
         plt.plot(self.d["rl_2"]["time"], self.d["rl_2"]["fuel"])
-        plt.xlabel("x [m]")
-        plt.ylabel("y [m]")
-        plt.title("x - y")
+        plt.xlabel("time [s]")
+        plt.ylabel("fuel [ml/s]")
+        plt.title("fuel - time")
         plt.savefig(filename + "fuel")
         plt.show()
 
@@ -286,12 +286,12 @@ class Plotter:
         pl_speed = np.round(pl_speed.astype(float), 1)
         pl_data1 = np.around(pl_data.astype(float)).astype(int)
 
-        plt.bar(r1, bar1, width=bar_width, color='blue', edgecolor='black', label='20 m/s')
+        plt.bar(r1, bar1, width=bar_width, color='yellow', edgecolor='black', label='20 m/s')
         plt.bar(r2, bar2, width=bar_width, color='cyan', edgecolor='black', label='30 m/s')
         plt.bar(r3, bar3, width=bar_width, color='red', edgecolor='black', label='40 m/s')
 
         for i in range(len(r4)):
-            plt.text(x=r4[i]-0.07, y=pl_data1[i]+3700, s=f"v = {pl_speed[i]}", color='black', rotation=90)
+            plt.text(x=r4[i]-0.05, y=pl_data1[i]-50, s=f"v = {pl_speed[i]}", color='black', rotation=90)
         plt.xticks([r + bar_width for r in range(len(bar1))], ['700', '500', '300', '200', '100'])
         plt.ylabel("Value")
         plt.xlabel("Float rate [veh/h]")
@@ -366,7 +366,7 @@ def main(mode):
     #     filename=f"/home/akos/workspace/Thesis/thesis/data/20200217_first_results/plots/Plot_Case_000_")
     folder_name = "20200301"
     if mode == "generate":
-        for a in range(1, 46):
+        for a in range(1, 82):
             plotter = Plotter(folder_name=folder_name)
             plotter.read_file(filename=f"/home/akos/workspace/Thesis/thesis/data/"
                                        f"{folder_name}/highway_case_{a}_emission.csv")
@@ -376,11 +376,12 @@ def main(mode):
                                           f"{folder_name}/plots/Plot_Case_{a}_")
 
     elif mode == "plot":
-        filename = "/home/akos/workspace/Thesis/thesis/results_all.csv"
+        filename = "/home/akos/workspace/Thesis/thesis/data/20200301/results_all.csv"
         cases = ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15"]
         plotter = Plotter(folder_name=folder_name)
         # plotter.plot_cases(filename=filename, cases=cases, data="fuel")
         plotter.plot_difference(filename=filename, data="fuel")
+        plotter.plot_same_flow_different_cases(filename=filename, data="fuel")
 
 
 if __name__ == "__main__":
