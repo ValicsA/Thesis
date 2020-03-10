@@ -311,17 +311,38 @@ class Plotter:
 
         plt.show()
 
+    @staticmethod
+    def _cut_relevant_results(data, data_type, cut_from_bas, cut_from_add):
+        start = 0 if data_type == "avr" else 1
+        data = data[start::2]
+        data_add = data[45:]
+        data_add = data_add[cut_from_add::3]
+        data_bas = data[:45]
+        data_bas = data_bas[cut_from_bas::5]
+        data_plot = np.concatenate((data_bas, data_add))
+        return data_plot
+
     def plot_same_flow_different_cases(self, filename, data):
+        x_label_bas = range(1, 46)
+        x_label_bas = x_label_bas[2::5]
+        x_label_add = range(46, 82)
+        x_label_add = x_label_add[1::3]
+        x_label = np.concatenate((x_label_bas, x_label_add))
         bar_width = 0.3
         means = self._read_mean_results(filename=filename)
         pl_data = np.array([])
+        pl_speed = np.array([])
         for i in range(means.shape[0]):
             if means[i, 0] == data:
-                pl_data = np.append(pl_data, means[i, 1])
-        pl_data = pl_data[1::2]
-        pl_data = pl_data[::5]
+                pl_data = np.append(pl_data, float(means[i, 1]))
+            elif means[i, 0] == "speed":
+                pl_speed = np.append(pl_speed, float(means[i, 1]))
 
-        bar = pl_data.astype(float)
+        pl_data = self._cut_relevant_results(data=pl_data, data_type="sum", cut_from_bas=4, cut_from_add=2)
+        pl_speed = self._cut_relevant_results(data=pl_speed, data_type="avr", cut_from_bas=4, cut_from_add=2)
+
+        # bar = pl_data.astype(float)
+        bar = pl_data
 
         r = np.arange(len(bar))
 
@@ -330,25 +351,23 @@ class Plotter:
         plt.bar(r, bar, width=bar_width, color='yellow', edgecolor='black', label='20 m/s')
 
         for i in range(len(r)):
-            plt.text(x=r[i] - 0.05, y=pl_data1[i], s=f"v = haha", color='black', rotation=90)
-        plt.xticks([r for r in range(len(bar))], ['1', '6', '11', '16', '21', '26', '31', '36', '41'])
+            plt.text(x=r[i]-0.2, y=pl_data1[i]+50, s=f"v={int(pl_speed[i])}", color='black', rotation=90)
+        plt.xticks([r for r in range(len(bar))], x_label)
         plt.ylabel("Value")
         plt.xlabel("Case")
-        plt.title(f"{data}")
+        plt.title(f"{data} - 100")
         plt.legend()
 
         plt.show()
 
-        # pl_data = pl_data.astype(float)
-        # pl_speed = pl_speed.astype(float)
-        # pl_speed, pl_data = zip(*sorted(zip(pl_speed, pl_data)))
-        #
-        # plt.plot(pl_speed, pl_data)
-        # plt.ylabel(f"{data} {self.dimensions[data]}")
-        # plt.xlabel("Speed [m/s]")
-        # plt.title(f"{data}")
-        #
-        # plt.show()
+        pl_speed, pl_data = zip(*sorted(zip(pl_speed, pl_data)))
+
+        plt.plot(pl_speed, pl_data)
+        plt.ylabel(f"{data} {self.dimensions[data]}")
+        plt.xlabel("Speed [m/s]")
+        plt.title(f"{data} - 100")
+
+        plt.show()
 
 
 def main(mode):
@@ -386,6 +405,6 @@ def main(mode):
 
 if __name__ == "__main__":
 
-    main(mode="generate")
+    main(mode="plot")
 
     print("End")
