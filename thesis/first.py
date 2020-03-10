@@ -196,7 +196,8 @@ def run_experiment(parameters):
     inflow_c = Inflow(flow_rate=flow_rate, vehicle_types=vehicle_types)
     inflow = inflow_c.create_inflow()
 
-    net_params = NetParams(additional_params=additional_net_params, inflows=inflow)
+    # net_params = NetParams(additional_params=additional_net_params, inflows=inflow)
+    net_params = NetParams(additional_params=additional_net_params)
 
     initial_config = InitialConfig(spacing="random", perturbation=1, edges_distribution=["edge0"])
     traffic_lights = TrafficLightParams()
