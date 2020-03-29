@@ -231,7 +231,7 @@ class Plotter:
             if means[i, 0] == data:
                 pl = np.append(pl, means[i, 1])
         pl = pl[1::2]
-        pl = pl[:15]
+        pl = pl[:4]
         width = 0.2
         y_pos = np.arange(1, len(cases)+1)
 
@@ -256,59 +256,98 @@ class Plotter:
         means = np.reshape(means, (int(len(means) / 2), 2))
         return means
 
-    def plot_difference(self, filename, data):
-        """
-        Plots the difference between test cases in case of data variable.
-        """
-        bar_width = 0.2
-        means = self._read_mean_results(filename=filename)
+    @ staticmethod
+    def _return_plotdata_plotspeed(means, start_index, data_type, data_name_dim_exp):
         pl_data = np.array([])
         pl_speed = np.array([])
         for i in range(means.shape[0]):
-            if means[i, 0] == data:
+            if means[i, 0] == data_name_dim_exp[0]:
                 pl_data = np.append(pl_data, means[i, 1])
             elif means[i, 0] == "speed":
                 pl_speed = np.append(pl_speed, means[i, 1])
         pl_speed = pl_speed[::2]
-        pl_speed = pl_speed[15:30]
-        pl_data = pl_data[1::2]
-        pl_data = pl_data[15:30]
+        pl_speed = pl_speed[start_index:start_index + 12]
+        pl_data = pl_data[::2] if data_type == "Avr" else pl_data[1::2]
+        pl_data = pl_data[start_index:start_index + 12]
+        return pl_data.astype(float), pl_speed.astype(float)
 
-        bar1 = pl_data[:5].astype(float)
-        bar2 = pl_data[5:10].astype(float)
-        bar3 = pl_data[10:15].astype(float)
+    def plot_difference(self, filename, start_index, data_type, data_name_dim_exp, save_path):
+        """
+        Plots the data_type (Sum or Avr) data_name_dim_exp emissions.
+        Creates four bars for different number of traffic vehicles, and three groups of these four bars for
+            desired RL speeds. Draws the actual speed on the top of each bars.
+        Saves the generated plots to save_path folder with a specific name.
+        """
+        bar_width = 0.2
+        means = self._read_mean_results(filename=filename)
+        pl_data, pl_speed = self._return_plotdata_plotspeed(means=means, start_index=start_index, data_type=data_type,
+                                                            data_name_dim_exp=data_name_dim_exp)
+
+        bar1 = pl_data[:3]
+        bar2 = pl_data[3:6]
+        bar3 = pl_data[6:9]
+        bar4 = pl_data[9:12]
 
         r1 = np.arange(len(bar1))
         r2 = [x2 + bar_width for x2 in r1]
         r3 = [x3 + bar_width*2 for x3 in r1]
-        r4 = np.append(np.append(r1, r2), r3)
+        r4 = [x4 + bar_width*3 for x4 in r1]
+        r5 = np.append(np.append(np.append(r1, r2), r3), r4)
 
-        pl_speed = np.round(pl_speed.astype(float), 1)
-        pl_data1 = np.around(pl_data.astype(float)).astype(int)
+        pl_speed = np.round(pl_speed, 1)
 
-        plt.bar(r1, bar1, width=bar_width, color='yellow', edgecolor='black', label='20 m/s')
-        plt.bar(r2, bar2, width=bar_width, color='cyan', edgecolor='black', label='30 m/s')
-        plt.bar(r3, bar3, width=bar_width, color='red', edgecolor='black', label='40 m/s')
+        plt.bar(r1, bar1, width=bar_width, color='yellow', edgecolor='black', label='10 t.v.')
+        plt.bar(r2, bar2, width=bar_width, color='cyan', edgecolor='black', label='15 t.v.')
+        plt.bar(r3, bar3, width=bar_width, color='red', edgecolor='black', label='20 t.v.')
+        plt.bar(r4, bar4, width=bar_width, color='pink', edgecolor='black', label='25 t.v.')
 
-        for i in range(len(r4)):
-            plt.text(x=r4[i]-0.05, y=pl_data1[i]-50, s=f"v = {pl_speed[i]}", color='black', rotation=90)
-        plt.xticks([r + bar_width for r in range(len(bar1))], ['700', '500', '300', '200', '100'])
-        plt.ylabel("Value")
-        plt.xlabel("Float rate [veh/h]")
-        plt.title(f"{data}")
+        for i in range(len(r5)):
+            plt.text(x=r5[i]-bar_width/2.3, y=pl_data[i], s=f"v={pl_speed[i]}", color='black', rotation=0, fontsize=6)
+        plt.xticks([r + bar_width*1.5 for r in range(len(bar1))], ['20', '30', '35'])
+        plt.ylabel(f"{data_name_dim_exp[0]} {data_name_dim_exp[1]}")
+        plt.xlabel(f"Desired speed of RL vehicles [m/s]")
+        if start_index == 0:
+            tv_speed = 15
+        elif start_index == 12:
+            tv_speed = 20
+        else:
+            tv_speed = 30
+        plt.title(f"{data_type} {data_name_dim_exp[0]} {data_name_dim_exp[2]} - {tv_speed} m/s t.v. speed")
         plt.legend()
+        plt.savefig(f"{save_path}{data_name_dim_exp[0]}_tvs{tv_speed}_{data_type}")
 
         plt.show()
 
-        pl_data = pl_data.astype(float)
-        pl_speed = pl_speed.astype(float)
-        pl_speed, pl_data = zip(*sorted(zip(pl_speed, pl_data)))
+    @ staticmethod
+    def _fit_line(x, y, exp, legend):
+        x_, y_ = zip(*sorted(zip(x, y)))
+        coeff = np.polyfit(x_, y_, exp)
+        poly = np.poly1d(coeff)
+        new_x = np.linspace(x_[0], x_[-1])
+        new_y = poly(new_x)
+        plt.plot(x_, y_, 'o', new_x, new_y, label=legend)
 
-        plt.plot(pl_speed, pl_data)
-        plt.ylabel(f"{data} {self.dimensions[data]}")
+    def plot_values_and_speed(self, filename, start_index, data_type, data_name_dim_exp, save_path):
+        means = self._read_mean_results(filename=filename)
+        pl_data, pl_speed = self._return_plotdata_plotspeed(means=means, start_index=start_index, data_type=data_type,
+                                                            data_name_dim_exp=data_name_dim_exp)
+
+        self._fit_line(x=pl_speed[:4], y=pl_data[:4], exp=2, legend="20 m/s")
+        self._fit_line(x=pl_speed[4:8], y=pl_data[4:8], exp=2, legend="30 m/s")
+        self._fit_line(x=pl_speed[8:12], y=pl_data[8:12], exp=2, legend="35 m/s")
+
+        if start_index == 0:
+            tv_speed = 15
+        elif start_index == 12:
+            tv_speed = 20
+        else:
+            tv_speed = 30
+
+        plt.legend()
+        plt.ylabel(f"{data_name_dim_exp[0]} {data_name_dim_exp[1]}")
         plt.xlabel("Speed [m/s]")
-        plt.title(f"{data}")
-
+        plt.title(f"{data_type} {data_name_dim_exp[0]} {data_name_dim_exp[2]} - {tv_speed} t.v. speed")
+        plt.savefig(f"{save_path}{data_name_dim_exp[0]}_speed_{data_type}_{tv_speed}")
         plt.show()
 
     @staticmethod
@@ -383,24 +422,50 @@ def main(mode):
     # plotter.calculate_average()
     # plotter.plot_results(
     #     filename=f"/home/akos/workspace/Thesis/thesis/data/20200217_first_results/plots/Plot_Case_000_")
-    folder_name = "20200301"
+    folder_name = "20200320"
     if mode == "generate":
-        for a in range(1, 82):
+        for a in range(1, 37):
             plotter = Plotter(folder_name=folder_name)
-            plotter.read_file(filename=f"/home/akos/workspace/Thesis/thesis/data/"
+            plotter.read_file(filename=f"/home/akos/workspace/emission_results/"
                                        f"{folder_name}/highway_case_{a}_emission.csv")
             plotter.fix_zero_emissions()
             plotter.calculate_average()
-            plotter.plot_results(filename=f"/home/akos/workspace/Thesis/thesis/data/"
+            plotter.plot_results(filename=f"/home/akos/workspace/emission_results/"
                                           f"{folder_name}/plots/Plot_Case_{a}_")
 
     elif mode == "plot":
-        filename = "/home/akos/workspace/Thesis/thesis/data/20200301/results_all.csv"
-        cases = ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "C11", "C12", "C13", "C14", "C15"]
+        filename = f"/home/akos/workspace/emission_results/{folder_name}/results_all.csv"
+        save_path = f"/home/akos/workspace/emission_results/{folder_name}/plots/results/"
         plotter = Plotter(folder_name=folder_name)
         # plotter.plot_cases(filename=filename, cases=cases, data="fuel")
-        plotter.plot_difference(filename=filename, data="fuel")
-        plotter.plot_same_flow_different_cases(filename=filename, data="fuel")
+        data_avr = [["fuel", "[ml/s]", "consumption"],
+                    ["CO", "[g/s]", "emission"],
+                    ["CO2", "[g/s]", "emission"],
+                    ["NOx", "[g/s]", "emission"],
+                    ["HC", "[g/s]", "emission"],
+                    ["PMx", "[g/s]", "emission"]]
+        data_sum = [["fuel", "[ml]", "consumption"],
+                    ["CO", "[g]", "emission"],
+                    ["CO2", "[g]", "emission"],
+                    ["NOx", "[g]", "emission"],
+                    ["HC", "[g]", "emission"],
+                    ["PMx", "[g]", "emission"]]
+        data_types = ["Sum", "Avr"]
+        start_indexes = np.array([0, 12, 24])
+        for start_index in start_indexes:
+            for data_type in data_types:
+                for data_name_dim_exp in (data_avr if data_type == "Avr" else data_sum):
+                    plotter.plot_difference(filename=filename,
+                                            start_index=start_index,
+                                            data_type=data_type,
+                                            data_name_dim_exp=data_name_dim_exp,
+                                            save_path=save_path)
+                    plotter.plot_values_and_speed(filename=filename,
+                                                  start_index=start_index,
+                                                  data_type=data_type,
+                                                  data_name_dim_exp=data_name_dim_exp,
+                                                  save_path=save_path)
+        # plotter.plot_same_flow_different_cases(filename=filename, data="fuel")
 
 
 if __name__ == "__main__":
