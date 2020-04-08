@@ -89,7 +89,7 @@ def run_model_stablebaseline(flow_params, num_cpus=1, rollout_size=50, num_steps
     return train_model
 
 
-if __name__ == "__main__":
+def train():
     flags = parse_args(sys.argv[1:])
 
     # import relevant information from the exp_config script
@@ -121,21 +121,28 @@ if __name__ == "__main__":
         with open(os.path.join(path, result_name) + '.json', 'w') as outfile:
             json.dump(flow_params, outfile,
                       cls=FlowParamsEncoder, sort_keys=True, indent=4)
-
-        # Replay the result by loading the model
-        print('Loading the trained model and testing it out!')
-        model = DQN.load(save_path)
-        flow_params = get_flow_params(os.path.join(path, result_name) + '.json')
-        flow_params['sim'].render = True
-        env_constructor = env_constructor(params=flow_params, version=0)()
-        # The algorithms require a vectorized environment to run
-        eval_env = DummyVecEnv([lambda: env_constructor])
-        obs = eval_env.reset()
-        reward = 0
-        for _ in range(flow_params['env'].horizon):
-            action, _states = model.predict(obs)
-            obs, rewards, dones, info = eval_env.step(action)
-            reward += rewards
-        print('the final reward is {}'.format(reward))
     else:
         assert False, "rl_trainer should be 'Stable-Baselines'!"
+
+
+def play_results(path, result_name):
+    print('Loading the trained model and testing it out!')
+    save_path = os.path.join(path, result_name)
+    model = DQN.load(save_path)
+    flow_params = get_flow_params(os.path.join(path, result_name) + '.json')
+    flow_params['sim'].render = True
+    env_con = env_constructor(params=flow_params, version=0)()
+    # The algorithms require a vectorized environment to run
+    eval_env = DummyVecEnv([lambda: env_con])
+    obs = eval_env.reset()
+    reward = 0
+    for _ in range(flow_params['env'].horizon):
+        action, _states = model.predict(obs)
+        obs, rewards, dones, info = eval_env.step(action)
+        reward += rewards
+    print('the final reward is {}'.format(reward))
+
+
+if __name__ == "__main__":
+    # train()
+    play_results(path="/home/akos/baseline_results/singleagent_autobahn/", result_name="2020-04-08-20:18:28")
