@@ -29,10 +29,7 @@ def parse_args(args):
     argparse.Namespace
         the output parser object
     """
-    parser = argparse.ArgumentParser(
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        description="Parse argument used when running a Flow simulation.",
-        epilog="python train.py EXP_CONFIG")
+    parser = argparse.ArgumentParser()
 
     # required input parameters
     parser.add_argument(
@@ -49,10 +46,10 @@ def parse_args(args):
         '--num_cpus', type=int, default=1,
         help='How many CPUs to use')
     parser.add_argument(
-        '--num_steps', type=int, default=5000,
+        '--num_steps', type=int, default=500000,
         help='How many total steps to perform learning over')
     parser.add_argument(
-        '--rollout_size', type=int, default=1000,
+        '--rollout_size', type=int, default=500,
         help='How many steps are in a training batch.')
 
     return parser.parse_known_args(args)[0]
