@@ -6,18 +6,22 @@ Description
 
 import numpy as np
 
+from gym.spaces.box import Box
 from gym.spaces.discrete import Discrete
+from gym.spaces import Tuple
 from flow.core.rewards import desired_velocity
 from flow.core import rewards
 from flow.envs.base import Env
 
 ADDITIONAL_ENV_PARAMS = {
-    # maximum acceleration of autonomous vehicles
-    'max_accel': 1,
-    # maximum deceleration of autonomous vehicles
-    'max_decel': 1,
+    # acceleration of autonomous vehicles
+    'accel': 3.5,
+    # deceleration of autonomous vehicles
+    'decel': -3.5,
+    # emergency braking of the vehicle
+    'emer': -9,
     # desired velocity for all vehicles in the network, in m/s
-    "target_velocity": 25
+    "target_velocity": 30
 }
 
 
@@ -34,27 +38,52 @@ class Autobahn(Env):
     @property
     def observation_space(self):
         """See class definition."""
-        return Discrete(4)
+        return Box(-float('inf'), float('inf'), shape=(5,), dtype=np.float32)
 
     @property
     def action_space(self):
         """See class definition."""
-        return Discrete(4)
+        # Accelerate (Lane change to left (0), Lane change to right (1), No lane change (2)),
+        # Decelerate (No lane change (3)),
+        # Maintain Speed (Lane change to left (4), Lane change to right (5), No lane change (6)),
+        # Emergency Brake (No lane change (7))
+        speed = Discrete(4)
+        # Lane change to left, Lane change to right, No lane change
+        lane_change = Discrete(3)
+        return Discrete(7)
 
     def _apply_rl_actions(self, rl_actions):
         """See class definition."""
-        # in the warmup steps, rl_actions is None
-        if rl_actions:
-            for rl_id, actions in rl_actions.items():
-                accel = actions[0]
+        if 0 <= rl_actions < 3:
+            acceleration = ADDITIONAL_ENV_PARAMS["accel"]
+            if rl_actions == 0:
+                lane_change_action = 1
+            if rl_actions == 1:
+                lane_change_action = -1
+            if rl_actions == 2:
+                lane_change_action = 0
+        elif rl_actions == 3:
+            acceleration = ADDITIONAL_ENV_PARAMS["decel"]
+            lane_change_action = 0
+        elif 3 < rl_actions < 7:
+            acceleration = 0
+            if rl_actions == 4:
+                lane_change_action = 1
+            if rl_actions == 5:
+                lane_change_action = -1
+            if rl_actions == 6:
+                lane_change_action = 0
+        elif rl_actions == 7:
+            acceleration = ADDITIONAL_ENV_PARAMS["emer"]
+            lane_change_action = 0
+        else:
+            acceleration = 0
+            lane_change_action = 0
+            print("Not valid rl_action!")
 
-                # lane_change_softmax = np.exp(actions[1:4])
-                # lane_change_softmax /= np.sum(lane_change_softmax)
-                # lane_change_action = np.random.choice([-1, 0, 1],
-                #                                       p=lane_change_softmax)
-
-                self.k.vehicle.apply_acceleration(rl_id, accel)
-                # self.k.vehicle.apply_lane_change(rl_id, lane_change_action)
+        rl_id = "rl_0"
+        self.k.vehicle.apply_acceleration(rl_id, acceleration)
+        self.k.vehicle.apply_lane_change(rl_id, lane_change_action)
 
     def get_state(self):
         """See class definition."""
@@ -95,7 +124,7 @@ class Autobahn(Env):
 
             obs.update({rl_id: observation})
 
-        return obs
+        return obs["rl_0"]
 
     def compute_reward(self, rl_actions, **kwargs):
         """See class definition."""
