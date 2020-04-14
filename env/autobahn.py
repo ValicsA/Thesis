@@ -130,18 +130,16 @@ class Autobahn(Env):
                 reward = 0
             else:
                 # reward high system-level velocities
-                cost1 = desired_velocity(self, fail=kwargs['fail'])
+                actual_speed = self.k.vehicle.get_speed(rl_id)
+                cost1 = desired_velocity(self, fail=kwargs['fail']) / actual_speed
 
                 # penalize small time headways
                 cost2 = 0
                 t_min = 1  # smallest acceptable time headway
 
                 lead_id = self.k.vehicle.get_leader(rl_id)
-                if lead_id not in ["", None] \
-                        and self.k.vehicle.get_speed(rl_id) > 0:
-                    t_headway = max(
-                        self.k.vehicle.get_headway(rl_id) /
-                        self.k.vehicle.get_speed(rl_id), 0)
+                if lead_id not in ["", None] and self.k.vehicle.get_speed(rl_id) > 0:
+                    t_headway = max(self.k.vehicle.get_headway(rl_id) / self.k.vehicle.get_speed(rl_id), 0)
                     cost2 += min((t_headway - t_min) / t_min, 0)
 
                 # weights for cost1, cost2, and cost3, respectively
