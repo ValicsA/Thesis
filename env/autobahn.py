@@ -91,35 +91,23 @@ class Autobahn(Env):
 
         # normalizing constants
         max_speed = self.k.network.max_speed()
-        max_length = self.k.network.length()
+        target_speed = desired_velocity(self)
 
         for rl_id in self.k.vehicle.get_rl_ids():
             this_speed = self.k.vehicle.get_speed(rl_id)
-            lead_id = self.k.vehicle.get_leader(rl_id)
-            follower = self.k.vehicle.get_follower(rl_id)
-
-            if lead_id in ["", None]:
-                # in case leader is not visible
-                lead_speed = max_speed
-                lead_head = max_length
-            else:
-                lead_speed = self.k.vehicle.get_speed(lead_id)
-                lead_head = self.k.vehicle.get_headway(lead_id)
-
-            if follower in ["", None]:
-                # in case follower is not visible
-                follow_speed = 0
-                follow_head = max_length
-            else:
-                follow_speed = self.k.vehicle.get_speed(follower)
-                follow_head = self.k.vehicle.get_headway(follower)
+            lead_speeds = self.k.vehicle.get_lane_leaders_speed(rl_id)
+            lead_headways = self.k.vehicle.get_lane_headways(rl_id)
+            follower_speeds = self.k.vehicle.get_lane_followers_speed(rl_id)
+            follower_headways = self.k.vehicle.get_lane_tailways(rl_id)
 
             observation = np.array([
-                this_speed / max_speed,
-                (lead_speed - this_speed) / max_speed,
-                lead_head / max_length,
-                (this_speed - follow_speed) / max_speed,
-                follow_head / max_length
+                this_speed,
+                target_speed,
+                max_speed,
+                lead_headways[0], lead_headways[1], lead_headways[2],
+                lead_speeds[0], lead_speeds[1], lead_speeds[2],
+                follower_headways[0], follower_headways[1], follower_headways[2],
+                follower_speeds[0], follower_speeds[1], follower_speeds[2]
             ])
 
             obs.update({rl_id: observation})
