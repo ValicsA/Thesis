@@ -38,7 +38,7 @@ class Autobahn(Env):
     @property
     def observation_space(self):
         """See class definition."""
-        return Box(-float('inf'), float('inf'), shape=(5,), dtype=np.float32)
+        return Box(-float('inf'), float('inf'), shape=(15,), dtype=np.float32)
 
     @property
     def action_space(self):
