@@ -54,6 +54,9 @@ class Autobahn(Env):
 
     def _apply_rl_actions(self, rl_actions):
         """See class definition."""
+        acceleration = 0
+        lane_change_action = 0
+
         if 0 <= rl_actions < 3:
             acceleration = ADDITIONAL_ENV_PARAMS["accel"]
             if rl_actions == 0:
@@ -77,8 +80,6 @@ class Autobahn(Env):
             acceleration = ADDITIONAL_ENV_PARAMS["emer"]
             lane_change_action = 0
         else:
-            acceleration = 0
-            lane_change_action = 0
             print("Not valid rl_action!")
 
         rl_id = "rl_0"
