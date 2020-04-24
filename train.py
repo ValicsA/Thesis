@@ -190,6 +190,7 @@ def play_results(path, result_name):
     model = DQN.load(save_path)
     flow_params = get_flow_params(os.path.join(path, result_name) + '.json')
     flow_params['sim'].render = True
+    flow_params['sim'].overtake_right = True
     env_con = env_constructor(params=flow_params, version=0)()
     # The algorithms require a vectorized environment to run
     eval_env = DummyVecEnv([lambda: env_con])
@@ -203,5 +204,5 @@ def play_results(path, result_name):
 
 
 if __name__ == "__main__":
-    train()
-    # play_results(path="/home/akos/baseline_results/singleagent_autobahn/", result_name="2020-04-08-20:18:28")
+    # train()
+    play_results(path="/home/akos/baseline_results/singleagent_autobahn/", result_name="2020-04-24-19:20:34")
