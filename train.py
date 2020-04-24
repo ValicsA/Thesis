@@ -96,6 +96,9 @@ def parse_args(args):
     parser.add_argument(
         '--tensorboard_log', type=str, default="/home/akos/baseline_results/singleagent_autobahn/logs",
         help='The log location for tensorboard (if None, no logging).')
+    parser.add_argument(
+        '--full_tensorboard_log', type=bool, default=True,
+        help='enable additional logging when using tensorboard WARNING: this logging can take a lot of space quickly')
 
     return parser.parse_known_args(args)[0]
 
@@ -138,7 +141,8 @@ def run_model_stablebaseline(flow_params, args):
                       target_network_update_freq=args.target_network_update_freq,
                       param_noise=args.param_noise,
                       verbose=args.verbose,
-                      tensorboard_log=args.tensorboard_log
+                      tensorboard_log=args.tensorboard_log,
+                      full_tensorboard_log=args.full_tensorboard_log
                       )
 
     train_model.learn(total_timesteps=args.num_steps)
