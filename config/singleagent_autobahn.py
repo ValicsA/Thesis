@@ -3,17 +3,13 @@ Description
 
 @author Ákos Valics
 """
-import os
 import random
-import warnings
 
-import pandas as pd
 from flow.controllers import IDMController, ContinuousRouter, RLController
-from flow.core.experiment import Experiment
 from flow.core.params import NetParams, SumoCarFollowingParams, SumoLaneChangeParams, InFlows, InitialConfig, \
     TrafficLightParams, VehicleParams, SumoParams, EnvParams
-from flow.envs.ring.accel import ADDITIONAL_ENV_PARAMS, AccelEnv
 from flow.networks import Network
+
 from Thesis.env.autobahn import Autobahn
 
 
@@ -152,7 +148,8 @@ class Vehicles:
         # Traffic vehicles which are spawned at the beginning of the simulation
         for i in range(self.traffic_vehicles_num):
             vehicles.add(self.vehicle_types[1] + str(i),
-                         acceleration_controller=(IDMController, {"v0": random.uniform(0.5, 1) * self.vehicle_speeds[2], "a": 3.5}),
+                         acceleration_controller=(IDMController, {"v0": random.uniform(0.5, 1) * self.vehicle_speeds[2],
+                                                                  "a": 3.5}),
                          routing_controller=(ContinuousRouter, {}),
                          car_following_params=SumoCarFollowingParams(),
                          lane_change_params=SumoLaneChangeParams(lane_change_mode=self.lane_change_modes[2]),
@@ -191,11 +188,13 @@ net_params = NetParams(additional_params=additional_net_params, inflows=inflow)
 initial_config = InitialConfig(spacing="random", perturbation=1, edges_distribution=["edge2"], lanes_distribution=3)
 traffic_lights = TrafficLightParams()
 
-sim_params = SumoParams(sim_step=1, render=False, emission_path=emission_path, restart_instance=True, overtake_right=False)
+sim_params = SumoParams(sim_step=1, render=False, emission_path=emission_path, restart_instance=True,
+                        overtake_right=True)
 
 env_params = EnvParams(additional_params=additional_env_params, horizon=500)
 
-vehicle_c = Vehicles(vehicle_types=vehicle_types, vehicle_speeds=vehicle_speeds, lane_change_modes=lane_change_modes, traffic_vehicles_num=traffic_vehicles_num)
+vehicle_c = Vehicles(vehicle_types=vehicle_types, vehicle_speeds=vehicle_speeds, lane_change_modes=lane_change_modes,
+                     traffic_vehicles_num=traffic_vehicles_num)
 vehicles = vehicle_c.create_vehicles()
 
 flow_params = dict(
