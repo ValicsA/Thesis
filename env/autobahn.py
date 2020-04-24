@@ -159,10 +159,12 @@ class Autobahn(Env):
         # specify observed vehicles
         for rl_id in self.k.vehicle.get_rl_ids():
             # leader
-            lead_id = self.k.vehicle.get_leader(rl_id)
-            if lead_id:
-                self.k.vehicle.set_observed(lead_id)
+            lead_ids = self.k.vehicle.get_lane_leaders(rl_id)
+            if len(lead_ids) > 0:
+                for lead_id in lead_ids:
+                    self.k.vehicle.set_observed(lead_id)
             # follower
-            follow_id = self.k.vehicle.get_follower(rl_id)
-            if follow_id:
-                self.k.vehicle.set_observed(follow_id)
+            follow_ids = self.k.vehicle.get_lane_followers(rl_id)
+            if len(follow_ids) > 0:
+                for follow_id in follow_ids:
+                    self.k.vehicle.set_observed(follow_id)
