@@ -132,7 +132,8 @@ class Autobahn(Env):
             else:
                 # reward high system-level velocities
                 actual_speed = self.k.vehicle.get_speed(rl_id)
-                cost1 = desired_velocity(self, fail=kwargs['fail']) / actual_speed
+                # cost1 = desired_velocity(self, fail=kwargs['fail']) / actual_speed if actual_speed > 0 else 0
+                cost1 = (actual_speed / desired_velocity(self, fail=kwargs['fail'])) * 10
 
                 # penalize small time headways
                 cost2 = 0
