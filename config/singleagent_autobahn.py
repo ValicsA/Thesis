@@ -21,190 +21,228 @@ class Inflow:
 
     def create_inflow(self):
 
-        inflow = InFlows()
-
-        # for i in range(1, len(self.vehicle_types)):
-        inflow.add(
+        inflows = InFlows()
+        inflows.add(
             veh_type=self.vehicle_types[1],
             edge="edge0",
             vehs_per_hour=self.flow_rate,
             depart_lane="free",
             depart_speed="random")
+        inflows.add(
+            veh_type=self.vehicle_types[2],
+            edge="edge0",
+            vehs_per_hour=self.flow_rate/10,
+            depart_lane="first",
+            depart_speed="random")
+        return inflows
 
-        return inflow
 
-
-class MyNetwork(Network):
+class AutobahnNetwork(Network):
 
     def specify_nodes(self, net_params):
-        # specify the name and position (x,y) of each node
-        nodes = [{"id": "node_ego0", "x": -400, "y": 0},
-                 {"id": "node_ego1", "x": -200, "y": 0},
-                 {"id": "node_in", "x": 0, "y": 0},
-                 {"id": "node_middle_in", "x": 2000, "y": 0},
-                 {"id": "node_middle_out", "x": 5000, "y": 0},
-                 {"id": "node_out", "x": 5400, "y": 0}]
-
+        nodes = [{"id": "node_0", "x": 300, "y": 0},
+                 {"id": "node_1", "x": 500, "y": 0},
+                 {"id": "node_2", "x": 1000, "y": 0},
+                 {"id": "node_3", "x": 11000, "y": 0},
+                 {"id": "node_4", "x": 11500, "y": 0},
+                 {"id": "node_5", "x": 0, "y": -115},
+                 {"id": "node_6", "x": 300, "y": -115}]
         return nodes
 
     def specify_edges(self, net_params):
-        # this will let us control the number of lanes in the network
         lanes = net_params.additional_params["num_lanes"]
-        # speed limit of vehicles in the network
         speed_limit = net_params.additional_params["speed_limit"]
-
         edges = [
             {
                 "id": "edge0",
-                "numLanes": lanes,
+                "numLanes": lanes - 1,
                 "speed": speed_limit,
-                "from": "node_ego0",
-                "to": "node_ego1",
+                "from": "node_0",
+                "to": "node_1",
                 "length": 200
             },
             {
                 "id": "edge1",
                 "numLanes": lanes,
                 "speed": speed_limit,
-                "from": "node_ego1",
-                "to": "node_in",
-                "length": 200
+                "from": "node_1",
+                "to": "node_2",
+                "length": 500
             },
             {
                 "id": "edge2",
                 "numLanes": lanes,
                 "speed": speed_limit,
-                "from": "node_in",
-                "to": "node_middle_in",
-                "length": 2000
+                "from": "node_2",
+                "to": "node_3",
+                "length": 10000
             },
             {
                 "id": "edge3",
                 "numLanes": lanes,
                 "speed": speed_limit,
-                "from": "node_middle_in",
-                "to": "node_middle_out",
-                "length": 3000
+                "from": "node_3",
+                "to": "node_4",
+                "length": 500
             },
             {
                 "id": "edge4",
-                "numLanes": lanes,
-                "speed": speed_limit,
-                "from": "node_middle_out",
-                "to": "node_out",
-                "length": 400
+                "numLanes": 1,
+                "speed": speed_limit / 6,
+                "from": "node_5",
+                "to": "node_6",
+                "length": 300
+            },
+            {
+                "id": "edge5",
+                "numLanes": 1,
+                "speed": speed_limit / 6,
+                "from": "node_6",
+                "to": "node_1",
+                "length": 230
             }
         ]
-
         return edges
 
     def specify_routes(self, net_params):
-        rts = {"edge0": ["edge0", "edge1", "edge2", "edge3", "edge4"],
-               "edge1": ["edge1", "edge2", "edge3", "edge4"],
-               "edge2": ["edge2", "edge3", "edge4"],
-               "edge3": ["edge3", "edge4"],
-               "edge4": ["edge4"]}
-
+        rts = {"edge0": ["edge0", "edge1", "edge2", "edge3"],
+               "edge1": ["edge1", "edge2", "edge3"],
+               "edge2": ["edge2", "edge3"],
+               "edge3": ["edge3"],
+               "edge4": ["edge4", "edge5", "edge1", "edge2", "edge3"],
+               "edge5": ["edge5", "edge1", "edge2", "edge3"]}
         return rts
 
     def specify_edge_starts(self):
+        edge_starts = [("edge0", 300),
+                       ("edge1", 500),
+                       ("edge2", 1000),
+                       ("edge3", 21000),
+                       ("edge4", 0),
+                       ("edge5", 300)]
+        return edge_starts
 
-        edgestarts = [("edge0", -400),
-                      ("edge1", -200),
-                      ("edge2", 0),
-                      ("edge3", 2000),
-                      ("edge4", 5000)]
-
-        return edgestarts
+    @staticmethod
+    def gen_custom_start_pos(cls, net_params, initial_config, num_vehicles):
+        pass
 
 
 class Vehicles:
 
-    def __init__(self, vehicle_types, vehicle_speeds, lane_change_modes, traffic_vehicles_num):
+    def __init__(self, vehicle_types, vehicle_speeds, lane_change_modes, additional_vehicle_params):
         self.vehicle_types = vehicle_types
         self.vehicle_speeds = vehicle_speeds
         self.lane_change_modes = lane_change_modes
-        self.traffic_vehicles_num = traffic_vehicles_num
+        self.additional_vehicle_params = additional_vehicle_params
 
     def create_vehicles(self):
         vehicles = VehicleParams()
 
-        # RL vehicles
+        # RL vehicle
         vehicles.add(self.vehicle_types[0],
                      acceleration_controller=(RLController, {}),
                      routing_controller=(ContinuousRouter, {}),
                      car_following_params=SumoCarFollowingParams(max_speed=self.vehicle_speeds[0], accel=3.5),
                      lane_change_params=SumoLaneChangeParams(lane_change_mode=self.lane_change_modes[0]),
-                     num_vehicles=1)
+                     num_vehicles=1,
+                     additional_parameters=self.additional_vehicle_params["rl_additional_params"])
 
         # Flow vehicles
         vehicles.add(self.vehicle_types[1],
-                     acceleration_controller=(IDMController, {"v0": self.vehicle_speeds[1], "a": 3.5}),
+                     acceleration_controller=(IDMController, {"v0": random.uniform(0.7, 1) * self.vehicle_speeds[1],
+                                                              "a": 3.5}),
                      routing_controller=(ContinuousRouter, {}),
-                     car_following_params=SumoCarFollowingParams(max_speed=self.vehicle_speeds[0]),
+                     car_following_params=SumoCarFollowingParams(),
                      lane_change_params=SumoLaneChangeParams(lane_change_mode=self.lane_change_modes[1]),
-                     num_vehicles=0)
-
-        # Traffic vehicles which are spawned at the beginning of the simulation
-        for i in range(self.traffic_vehicles_num):
-            vehicles.add(self.vehicle_types[1] + str(i),
-                         acceleration_controller=(IDMController, {"v0": random.uniform(0.5, 1) * self.vehicle_speeds[2],
-                                                                  "a": 3.5}),
-                         routing_controller=(ContinuousRouter, {}),
-                         car_following_params=SumoCarFollowingParams(),
-                         lane_change_params=SumoLaneChangeParams(lane_change_mode=self.lane_change_modes[2]),
-                         num_vehicles=1)
+                     num_vehicles=0,
+                     additional_parameters=self.additional_vehicle_params["flow_additional_params"])
+        # Flow trucks
+        vehicles.add(self.vehicle_types[2],
+                     acceleration_controller=(IDMController, {"v0": random.uniform(0.7, 1) * self.vehicle_speeds[2],
+                                                              "a": 1.5}),
+                     routing_controller=(ContinuousRouter, {}),
+                     car_following_params=SumoCarFollowingParams(),
+                     lane_change_params=SumoLaneChangeParams(lane_change_mode=self.lane_change_modes[2]),
+                     num_vehicles=0,
+                     additional_parameters=self.additional_vehicle_params["truck_additional_params"])
 
         return vehicles
 
 
-additional_net_params = {"num_lanes": 3,
-                         "speed_limit": 40}
-additional_env_params = {
-    # acceleration of autonomous vehicles
-    'accel': 3.5,
-    # deceleration of autonomous vehicles
-    'decel': -3.5,
-    # emergency braking of the vehicle
-    'emer': -9,
-    # desired velocity for all vehicles in the network, in m/s
-    "target_velocity": 30
-}
-flow_rate = 500
-name = "singleagent_autobahn"
-vehicle_types = ["rl", "traffic"]
-vehicle_speeds = [30, 38, 20]
-lane_change_modes = ["strategic", "strategic", "strategic"]
-traffic_vehicles_num = 15
-experiment_len = 600
-emission_path = "emission_results"
+def create_parameters():
 
-inflow_c = Inflow(flow_rate=flow_rate, vehicle_types=vehicle_types)
+    parameters = {
+        "additional_net_params": {"num_lanes": 3,
+                                  "speed_limit": 40},
+
+        "additional_env_params": {
+            # acceleration of autonomous vehicles
+            'accel': 3.5,
+            # deceleration of autonomous vehicles
+            'decel': -3.5,
+            # emergency braking of the vehicle
+            'emer': -9,
+            # desired velocity for all vehicles in the network, in m/s
+            "target_velocity": 40},
+
+        "additional_vehicle_params": {
+            "rl_additional_params": {
+                "vClass": "evehicle",
+                "emissionClass": "HBEFA3/PC_D_EU6",
+                "guiShape": "passenger/sedan"},
+
+            "flow_additional_params": {
+                "vClass": "passenger",
+                "emissionClass": "HBEFA3/PC_D_EU6",
+                "guiShape": "passenger/sedan"},
+
+            "truck_additional_params": {
+                "vClass": "trailer",
+                "emissionClass": "HBEFA3/HDV_D_EU6",
+                "guiShape": "truck/semitrailer"},
+        },
+        "flow_rate": 1800,
+        "name": "singleagent_autobahn",
+        "vehicle_types": ["rl", "traffic", "truck"],
+        "vehicle_speeds": [35, 25, 20],
+        "lane_change_modes": ["strategic", "strategic", "strategic"],
+        "experiment_len": 600 + 200,
+        "emission_path": "emission_results",
+        "ego_initial_spacing": "random",
+        "ego_initial_edge": ["edge4"],
+        "simulation_step_size": 1,
+    }
+    return parameters
+
+
+params = create_parameters()
+
+inflow_c = Inflow(flow_rate=params["flow_rate"], vehicle_types=params["vehicle_types"])
 inflow = inflow_c.create_inflow()
 
-net_params = NetParams(additional_params=additional_net_params, inflows=inflow)
-# net_params = NetParams(additional_params=additional_net_params)
+network_params = NetParams(additional_params=params["additional_net_params"], inflows=inflow)
 
-initial_config = InitialConfig(spacing="random", perturbation=1, edges_distribution=["edge2"], lanes_distribution=3)
+initial_config = InitialConfig(spacing=params["ego_initial_spacing"], edges_distribution=params["ego_initial_edge"])
 traffic_lights = TrafficLightParams()
 
-sim_params = SumoParams(sim_step=1, render=False, emission_path=emission_path, restart_instance=True,
-                        overtake_right=True)
+simulation_params = SumoParams(sim_step=params["simulation_step_size"], render=False,
+                               emission_path=params["emission_path"], restart_instance=True, overtake_right=True)
 
-env_params = EnvParams(additional_params=additional_env_params, horizon=500)
+environment_params = EnvParams(additional_params=params["additional_env_params"], horizon=params["experiment_len"])
 
-vehicle_c = Vehicles(vehicle_types=vehicle_types, vehicle_speeds=vehicle_speeds, lane_change_modes=lane_change_modes,
-                     traffic_vehicles_num=traffic_vehicles_num)
-vehicles = vehicle_c.create_vehicles()
+vehicles = Vehicles(vehicle_types=params["vehicle_types"], vehicle_speeds=params["vehicle_speeds"],
+                    lane_change_modes=params["lane_change_modes"],
+                    additional_vehicle_params=params["additional_vehicle_params"])
+vehicle_params = vehicles.create_vehicles()
 
 flow_params = dict(
-    exp_tag=name,
+    exp_tag=params["name"],
     env_name=Autobahn,
-    network=MyNetwork,
+    network=AutobahnNetwork,
     simulator='traci',
-    sim=sim_params,
-    env=env_params,
-    net=net_params,
-    veh=vehicles,
+    sim=simulation_params,
+    env=environment_params,
+    net=network_params,
+    veh=vehicle_params,
     initial=initial_config
 )
