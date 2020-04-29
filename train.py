@@ -88,8 +88,28 @@ def parse_args(args):
         '--target_network_update_freq', type=int, default=500,
         help='Update the target network every `target_network_update_freq` steps.')
     parser.add_argument(
+        '--prioritized_replay', type=bool, default=False,
+        help='If True prioritized replay buffer will be used.')
+    parser.add_argument(
+        '--prioritized_replay_alpha', type=float, default=0.6,
+        help='Alpha parameter for prioritized replay buffer.'
+             'It determines how much prioritization is used, with alpha=0 corresponding to the uniform case.')
+    parser.add_argument(
+        '--prioritized_replay_beta0', type=float, default=0.4,
+        help='Initial value of beta for prioritized replay buffer.')
+    parser.add_argument(
+        '--prioritized_replay_beta_iters', type=int, default=None,
+        help='Number of iterations over which beta will be annealed from initial value to 1.0.'
+             'If set to None equals to max_timesteps.')
+    parser.add_argument(
+        '--prioritized_replay_eps', type=float, default=1e-6,
+        help='Epsilon to add to the TD errors when updating priorities.')
+    parser.add_argument(
         '--param_noise', type=bool, default=False,
         help='Whether or not to apply noise to the parameters of the policy.')
+    parser.add_argument(
+        '--policy_kwargs', default=None,
+        help='To disable dueling policy_kwargs=dict(dueling=False)')
     parser.add_argument(
         '--verbose', type=int, default=1,
         help='The verbosity level: 0 none, 1 training information, 2 tensorflow debug.')
@@ -103,7 +123,7 @@ def parse_args(args):
     return parser.parse_known_args(args)[0]
 
 
-def run_model_stablebaseline(flow_params, args):
+def run_model_stablebaseline(flow_params, args, model_params=None):
     """Run the model for num_steps if provided.
 
     Parameters
@@ -125,32 +145,63 @@ def run_model_stablebaseline(flow_params, args):
     else:
         env = SubprocVecEnv([env_constructor(params=flow_params, version=i)
                              for i in range(args.num_cpus)])
-
-    train_model = DQN(policy=MlpPolicy,
-                      env=env,
-                      gamma=args.gamma,
-                      learning_rate=args.learning_rate,
-                      buffer_size=args.buffer_size,
-                      exploration_fraction=args.exploration_fraction,
-                      exploration_final_eps=args.exploration_final_eps,
-                      exploration_initial_eps=args.exploration_initial_eps,
-                      train_freq=args.train_freq,
-                      batch_size=args.batch_size,
-                      double_q=args.double_q,
-                      learning_starts=args.learning_starts,
-                      target_network_update_freq=args.target_network_update_freq,
-                      param_noise=args.param_noise,
-                      verbose=args.verbose,
-                      tensorboard_log=args.tensorboard_log,
-                      full_tensorboard_log=args.full_tensorboard_log
-                      )
+    if model_params is None:
+        train_model = DQN(policy=MlpPolicy,
+                          env=env,
+                          gamma=args.gamma,
+                          learning_rate=args.learning_rate,
+                          buffer_size=args.buffer_size,
+                          exploration_fraction=args.exploration_fraction,
+                          exploration_final_eps=args.exploration_final_eps,
+                          exploration_initial_eps=args.exploration_initial_eps,
+                          train_freq=args.train_freq,
+                          batch_size=args.batch_size,
+                          double_q=args.double_q,
+                          learning_starts=args.learning_starts,
+                          target_network_update_freq=args.target_network_update_freq,
+                          prioritized_replay=args.prioritized_replay,
+                          prioritized_replay_alpha=args.prioritized_replay_alpha,
+                          prioritized_replay_beta0=args.prioritized_replay_beta0,
+                          prioritized_replay_beta_iters=args.prioritized_replay_beta_iters,
+                          prioritized_replay_eps=args.prioritized_replay_eps,
+                          param_noise=args.param_noise,
+                          policy_kwargs=args.policy_kwargs,
+                          verbose=args.verbose,
+                          tensorboard_log=args.tensorboard_log,
+                          full_tensorboard_log=args.full_tensorboard_log
+                          )
+    else:
+        train_model = DQN(policy=model_params["policy"],
+                          env=env,
+                          gamma=model_params["gamma"],
+                          learning_rate=model_params["learning_rate"],
+                          buffer_size=model_params["buffer_size"],
+                          exploration_fraction=model_params["exploration_fraction"],
+                          exploration_final_eps=model_params["exploration_final_eps"],
+                          exploration_initial_eps=model_params["exploration_initial_eps"],
+                          train_freq=model_params["train_freq"],
+                          batch_size=model_params["batch_size"],
+                          double_q=model_params["double_q"],
+                          learning_starts=model_params["learning_starts"],
+                          target_network_update_freq=model_params["target_network_update_freq"],
+                          prioritized_replay=model_params["prioritized_replay"],
+                          prioritized_replay_alpha=model_params["prioritized_replay_alpha"],
+                          prioritized_replay_beta0=model_params["prioritized_replay_beta0"],
+                          prioritized_replay_beta_iters=model_params["prioritized_replay_beta_iters"],
+                          prioritized_replay_eps=model_params["prioritized_replay_eps"],
+                          param_noise=model_params["param_noise"],
+                          policy_kwargs=model_params["policy_kwargs"],
+                          verbose=model_params["verbose"],
+                          tensorboard_log=model_params["tensorboard_log"],
+                          full_tensorboard_log=model_params["full_tensorboard_log"]
+                          )
 
     train_model.learn(total_timesteps=args.num_steps)
 
     return train_model
 
 
-def train():
+def train(model_params=None):
     args = parse_args(sys.argv[1:])
 
     # import relevant information from the exp_config script
@@ -167,7 +218,7 @@ def train():
 
         # Perform training.
         print('Beginning training.')
-        model = run_model_stablebaseline(flow_params=flow_params, args=args)
+        model = run_model_stablebaseline(flow_params=flow_params, args=args, model_params=model_params)
 
         # Save the model to a desired folder and then delete it to demonstrate loading.
         print('Saving the trained model!')
@@ -203,6 +254,11 @@ def play_results(path, result_name):
     print('the final reward is {}'.format(reward))
 
 
+def main(mode):
+
+    train() if mode == "train" else \
+        play_results(path="/home/akos/baseline_results/singleagent_autobahn/", result_name="2020-04-29-17:41:24")
+
+
 if __name__ == "__main__":
-    # train()
-    play_results(path="/home/akos/baseline_results/singleagent_autobahn/", result_name="2020-04-24-19:20:34")
+    main(mode="train")
