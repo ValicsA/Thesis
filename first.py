@@ -139,7 +139,8 @@ class Vehicles:
                      routing_controller=(ContinuousRouter, {}),
                      car_following_params=SumoCarFollowingParams(max_speed=self.vehicle_speeds[0], accel=3.5),
                      lane_change_params=SumoLaneChangeParams(lane_change_mode=self.lane_change_modes[0]),
-                     num_vehicles=3)
+                     num_vehicles=1,
+                     additional_parameters=True)
 
         # Flow vehicles
         vehicles.add(self.vehicle_types[1],
@@ -212,7 +213,7 @@ def run_experiment(parameters):
     emission_location = os.path.join(exp.env.sim_params.emission_path, exp.env.network.name)
     print(emission_location + '-emission.xml')
 
-    pd.read_csv(emission_location + '-emission.csv')
+    # pd.read_csv(emission_location + '-emission.csv')
 
 
 def create_parameters(case_num, flow, human_speed, rl_speed, traffic_vehicles_num):
