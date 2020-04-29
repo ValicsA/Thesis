@@ -101,15 +101,26 @@ class Autobahn(Env):
             follower_speeds = self.k.vehicle.get_lane_followers_speed(rl_id)
             follower_headways = self.k.vehicle.get_lane_tailways(rl_id)
 
-            observation = np.array([
-                this_speed,
-                target_speed,
-                max_speed,
-                lead_headways[0], lead_headways[1], lead_headways[2],
-                lead_speeds[0], lead_speeds[1], lead_speeds[2],
-                follower_headways[0], follower_headways[1], follower_headways[2],
-                follower_speeds[0], follower_speeds[1], follower_speeds[2]
-            ])
+            if len(lead_headways) > 1:
+                observation = np.array([
+                    this_speed,
+                    target_speed,
+                    max_speed,
+                    lead_headways[0], lead_headways[1], lead_headways[2],
+                    lead_speeds[0], lead_speeds[1], lead_speeds[2],
+                    follower_headways[0], follower_headways[1], follower_headways[2],
+                    follower_speeds[0], follower_speeds[1], follower_speeds[2]
+                ])
+            else:
+                observation = np.array([
+                    this_speed,
+                    target_speed,
+                    max_speed,
+                    lead_headways[0], lead_headways[0], lead_headways[0],
+                    lead_speeds[0], lead_speeds[0], lead_speeds[0],
+                    follower_headways[0], follower_headways[0], follower_headways[0],
+                    follower_speeds[0], follower_speeds[0], follower_speeds[0]
+                ])
 
             obs.update({rl_id: observation})
 
