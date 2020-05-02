@@ -12,13 +12,14 @@ import json
 import os
 import sys
 from time import strftime
+import warnings
 
 from flow.core.util import ensure_dir
 from flow.utils.registry import env_constructor
 from flow.utils.rllib import FlowParamsEncoder, get_flow_params
 from stable_baselines import DQN
 from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv
-from stable_baselines.deepq.policies import MlpPolicy
+from stable_baselines.deepq.policies import MlpPolicy, LnMlpPolicy, CnnPolicy, LnCnnPolicy
 
 
 def parse_args(args):
@@ -54,6 +55,9 @@ def parse_args(args):
     # *********************************
     # Optional model related parameters
     # *********************************
+    parser.add_argument(
+        '--policy', type=int, default=0,
+        help='Policy. 0-MlpPolicy, 1-LnMlpPolicy, 2-CNNPolicy, 3-LnCNNPolicy')
     parser.add_argument(
         '--gamma', type=float, default=0.99,
         help='Discount factor.')
@@ -108,8 +112,8 @@ def parse_args(args):
         '--param_noise', type=bool, default=False,
         help='Whether or not to apply noise to the parameters of the policy.')
     parser.add_argument(
-        '--policy_kwargs', default=None,
-        help='To disable dueling policy_kwargs=dict(dueling=False)')
+        '--dueling', type=bool, default=True,
+        help='Whether to enable dueling or not!')
     parser.add_argument(
         '--verbose', type=int, default=1,
         help='The verbosity level: 0 none, 1 training information, 2 tensorflow debug.')
@@ -146,7 +150,20 @@ def run_model_stablebaseline(flow_params, args, model_params=None):
         env = SubprocVecEnv([env_constructor(params=flow_params, version=i)
                              for i in range(args.num_cpus)])
     if model_params is None:
-        train_model = DQN(policy=MlpPolicy,
+        if args.policy == 0:
+            policy = MlpPolicy
+        elif args.policy == 1:
+            policy = LnMlpPolicy
+        elif args.policy == 2:
+            policy = CnnPolicy
+        elif args.policy == 3:
+            policy = LnCnnPolicy
+        else:
+            warnings.warn("Invalid policy type! Policy set to MlpPolicy.")
+            policy = MlpPolicy
+        dueling = None if args.dueling else dict(dueling=False)
+
+        train_model = DQN(policy=policy,
                           env=env,
                           gamma=args.gamma,
                           learning_rate=args.learning_rate,
@@ -165,7 +182,7 @@ def run_model_stablebaseline(flow_params, args, model_params=None):
                           prioritized_replay_beta_iters=args.prioritized_replay_beta_iters,
                           prioritized_replay_eps=args.prioritized_replay_eps,
                           param_noise=args.param_noise,
-                          policy_kwargs=args.policy_kwargs,
+                          policy_kwargs=dueling,
                           verbose=args.verbose,
                           tensorboard_log=args.tensorboard_log,
                           full_tensorboard_log=args.full_tensorboard_log
@@ -257,7 +274,7 @@ def play_results(path, result_name):
 def main(mode):
 
     train() if mode == "train" else \
-        play_results(path="/home/akos/baseline_results/singleagent_autobahn/", result_name="2020-04-29-17:41:24")
+        play_results(path="/home/akos/baseline_results/singleagent_autobahn/", result_name="DQN_28")
 
 
 if __name__ == "__main__":
