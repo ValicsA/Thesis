@@ -33,15 +33,15 @@ def play_results(path, result_name):
     print('the final reward is {}'.format(reward))
 
 
-def generate_emission_csv(xml_name, path="/home/akos/workspace/Thesis/emission_results/"):
+def generate_emission_csv(emission_path, emission_name):
     """
     Generates csv from emission xml. The xml path needs to be added manually!
     """
-    xml_path = os.path.join(path, xml_name)
+    xml_path = os.path.join(emission_path, (emission_name + ".xml"))
     emission_to_csv(xml_path)
 
 
-def plot_velocity(emission_filename, save_dir="/home/akos/Pictures/DQN_emissions/"):
+def plot_velocity(emission_path, emission_name, save_dir="/home/akos/Pictures/DQN_emissions/"):
     values_dict = {
         "time": np.array([]),
         "CO": np.array([]),
@@ -64,7 +64,7 @@ def plot_velocity(emission_filename, save_dir="/home/akos/Pictures/DQN_emissions
         "PMx": "[mg/s]",
         "speed": "[m/s]",
     }
-    emission_csv = os.path.join("/home/akos/workspace/Thesis/emission_results/", emission_filename)
+    emission_csv = os.path.join(emission_path, (emission_name + ".csv"))
     with open(emission_csv) as results_csv:
         results = csv.reader(results_csv, delimiter=',')
         line_count = 0
@@ -102,9 +102,14 @@ def plot_velocity(emission_filename, save_dir="/home/akos/Pictures/DQN_emissions
 
 
 def main():
-    play_results(path="/home/akos/baseline_results/singleagent_autobahn/", result_name="DQN_28")
-    # generate_emission_csv(xml_name="singleagent_autobahn_20200502-1946101588441570.5031855-emission.xml")
-    # plot_velocity(emission_filename="singleagent_autobahn_20200502-1946101588441570.5031855-emission.csv")
+    play_path = "/home/akos/baseline_results/singleagent_autobahn/"
+    play_name = "DQN_28"
+    emission_path = "/home/akos/workspace/Thesis/emission_results/"
+    emission_name = "singleagent_autobahn_20200502-1847311588438051.2489085-emission"
+
+    # play_results(path=play_path, result_name=play_name)
+    # generate_emission_csv(emission_path=emission_path, emission_name=emission_name)
+    plot_velocity(emission_path=emission_path, emission_name=emission_name)
 
 
 if __name__ == '__main__':
