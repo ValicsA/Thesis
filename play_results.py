@@ -100,6 +100,14 @@ def plot_velocity(emission_path, emission_name, save_dir="/home/akos/Pictures/DQ
         plt.savefig(save_dir + "time_" + r_key)
         plt.show()
 
+    sum_dict = {}
+    for s_key, s_value in values_dict.items():
+        sum_dict[s_key] = np.sum(s_value)
+    with open(emission_path+"sum_results.txt", "w") as sum_txt:
+        sum_txt.write("Sum of the following values.\n")
+        for k, v in sum_dict.items():
+            sum_txt.write(f"{k}: {v}\n")
+
 
 def main():
     play_path = "/home/akos/baseline_results/singleagent_autobahn/"
