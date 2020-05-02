@@ -43,8 +43,8 @@ class AutobahnNetwork(Network):
         nodes = [{"id": "node_0", "x": 300, "y": 0},
                  {"id": "node_1", "x": 500, "y": 0},
                  {"id": "node_2", "x": 1000, "y": 0},
-                 {"id": "node_3", "x": 11000, "y": 0},
-                 {"id": "node_4", "x": 11500, "y": 0},
+                 {"id": "node_3", "x": 6000, "y": 0},
+                 {"id": "node_4", "x": 6500, "y": 0},
                  {"id": "node_5", "x": 0, "y": -115},
                  {"id": "node_6", "x": 300, "y": -115}]
         return nodes
@@ -75,7 +75,7 @@ class AutobahnNetwork(Network):
                 "speed": speed_limit,
                 "from": "node_2",
                 "to": "node_3",
-                "length": 10000
+                "length": 5000
             },
             {
                 "id": "edge3",
@@ -117,7 +117,7 @@ class AutobahnNetwork(Network):
         edge_starts = [("edge0", 300),
                        ("edge1", 500),
                        ("edge2", 1000),
-                       ("edge3", 21000),
+                       ("edge3", 6000),
                        ("edge4", 0),
                        ("edge5", 300)]
         return edge_starts
@@ -206,7 +206,7 @@ def create_parameters():
         "vehicle_types": ["rl", "traffic", "truck"],
         "vehicle_speeds": [35, 25, 20],
         "lane_change_modes": ["strategic", "strategic", "strategic"],
-        "experiment_len": 600 + 200,
+        "experiment_len": 500,
         "emission_path": "emission_results",
         "ego_initial_spacing": "random",
         "ego_initial_edge": ["edge4"],
