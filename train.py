@@ -252,30 +252,9 @@ def train(model_params=None):
         assert False, "rl_trainer should be 'Stable-Baselines'!"
 
 
-def play_results(path, result_name):
-    print('Loading the trained model and testing it out!')
-    save_path = os.path.join(path, result_name)
-    model = DQN.load(save_path)
-    flow_params = get_flow_params(os.path.join(path, result_name) + '.json')
-    flow_params['sim'].render = True
-    flow_params['sim'].overtake_right = True
-    env_con = env_constructor(params=flow_params, version=0)()
-    # The algorithms require a vectorized environment to run
-    eval_env = DummyVecEnv([lambda: env_con])
-    obs = eval_env.reset()
-    reward = 0
-    for _ in range(flow_params['env'].horizon):
-        action, _states = model.predict(obs)
-        obs, rewards, dones, info = eval_env.step(action)
-        reward += rewards
-    print('the final reward is {}'.format(reward))
-
-
-def main(mode):
-
-    train() if mode == "train" else \
-        play_results(path="/home/akos/baseline_results/singleagent_autobahn/", result_name="DQN_28")
+def main():
+    train()
 
 
 if __name__ == "__main__":
-    main(mode="train")
+    main()
