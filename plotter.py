@@ -273,13 +273,16 @@ class Plotter:
 
         # for i in range(len(r7)):
         #     plt.text(x=r7[i]-bar_width/2.3, y=0, s=f"v={pl_speed[i]}", color='black', rotation=90, fontsize=6)
-        plt.xticks([r + bar_width*2.5 for r in range(len(bar1))], ['1800', '1500', '1200'])
-        plt.ylabel(f"{data_name_dim_exp[0]} {data_name_dim_exp[1]}")
-        plt.xlabel(f"Traffic flow [veh/h]")
         if start_index == 0:
             flow_rate = "high"
+            x_label = ['1980', '1650', '1320']
         else:
             flow_rate = "low"
+            x_label = ['1320', '1100', '880']
+
+        plt.xticks([r + bar_width*2.5 for r in range(len(bar1))], x_label)
+        plt.ylabel(f"{data_name_dim_exp[0]} {data_name_dim_exp[1]}")
+        plt.xlabel(f"Traffic flow [veh/h]")
         plt.title(f"{data_type} {data_name_dim_exp[0]} {data_name_dim_exp[2]} - {flow_rate} flow rate")
         plt.legend(loc="best", bbox_to_anchor=(1.0, 0.7), title="Ego-tr. speed")
         plt.savefig(f"{save_path}{data_name_dim_exp[0]}_{flow_rate}_flow_{data_type}", bbox_inches="tight")
