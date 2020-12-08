@@ -11,8 +11,9 @@ import numpy as np
 from flow.core.util import emission_to_csv
 from flow.utils.registry import env_constructor
 from flow.utils.rllib import get_flow_params
-from stable_baselines import DQN
 from stable_baselines.common.vec_env import DummyVecEnv
+
+from Thesis.dqn import DQN
 
 
 def play_results(path, result_name):
@@ -41,7 +42,7 @@ def generate_emission_csv(emission_path, emission_name):
     emission_to_csv(xml_path)
 
 
-def plot_velocity(emission_path, emission_name, save_dir="/home/akos/Pictures/DQN_emissions/"):
+def load_values_to_dict(emission_path, emission_name):
     values_dict = {
         "time": np.array([]),
         "CO": np.array([]),
@@ -84,12 +85,23 @@ def plot_velocity(emission_path, emission_name, save_dir="/home/akos/Pictures/DQ
                     values_dict["noise"] = np.append(values_dict["noise"], float(row[15]))
                     values_dict["PMx"] = np.append(values_dict["PMx"], float(row[17]))
                     values_dict["speed"] = np.append(values_dict["speed"], float(row[18]))
+    return values_dict, dimensions
 
-    # Fix zero emissions
+
+def fix_zero_emissions(values_dict):
     for keys, values in values_dict.items():
         for i in range(1, len(values)):
             values_dict[keys][i] = values_dict[keys][i - 1] * 0.99 \
                 if values_dict[keys][i] == 0 else values_dict[keys][i]
+    return values_dict
+
+
+def plot_velocity(emission_path, emission_name, save_dir="/home/akos/Pictures/DQN_emissions/"):
+
+    values_dict, dimensions = load_values_to_dict(emission_path, emission_name)
+
+    # Fix zero emissions
+    values_dict = fix_zero_emissions(values_dict)
 
     # Plot results in time
     for r_key, r_value in values_dict.items():
@@ -109,15 +121,48 @@ def plot_velocity(emission_path, emission_name, save_dir="/home/akos/Pictures/DQ
             sum_txt.write(f"{k}: {v}\n")
 
 
+def plot_more_speed_profiles(emission_path, emission_name, save_name, labels, save_dir="/home/akos/Pictures/DQN_emissions/"):
+    values_dict = {}
+    for i in range(len(emission_path)):
+        values_dict[i], _ = load_values_to_dict(emission_path[i], emission_name[i])
+        values_dict[i] = fix_zero_emissions(values_dict[i])
+
+    j = 0
+    for key, value in values_dict.items():
+        plt.plot(value["time"], value["speed"], label=labels[j])
+        j += 1
+    plt.xlabel("time [s]")
+    plt.ylabel("speed [m/s]")
+    plt.title("time - speed")
+    plt.legend()
+    plt.savefig(save_dir + save_name)
+    plt.show()
+
+
 def main():
     play_path = "/home/akos/baseline_results/singleagent_autobahn/"
-    play_name = "DQN_28"
-    emission_path = "/home/akos/workspace/Thesis/emission_results/"
-    emission_name = "singleagent_autobahn_20200502-1847311588438051.2489085-emission"
+    play_name = "DQN_83"
+    emission_path = f"/home/akos/Pictures/DQN_emissions/{play_name}/1/"
+    emission_path2 = f"/home/akos/Pictures/DQN_emissions/{play_name}/2/"
+    emission_name = "emission"
 
     # play_results(path=play_path, result_name=play_name)
     # generate_emission_csv(emission_path=emission_path, emission_name=emission_name)
-    plot_velocity(emission_path=emission_path, emission_name=emission_name)
+    # plot_velocity(emission_path=emission_path, emission_name=emission_name, save_dir=emission_path)
+
+    # generate_emission_csv(emission_path=emission_path2, emission_name=emission_name)
+    # plot_velocity(emission_path=emission_path2, emission_name=emission_name, save_dir=emission_path2)
+
+    plot_more_speed_profiles(emission_path=[f"/home/akos/Pictures/DQN_emissions/DQN_66/1/",
+                                            f"/home/akos/Pictures/DQN_emissions/DQN_47/1/",
+                                            f"/home/akos/Pictures/DQN_emissions/DQN_78/2/",
+                                            f"/home/akos/Pictures/DQN_emissions/DQN_79/2/"],
+                             emission_name=["emission",
+                                            "emission",
+                                            "emission",
+                                            "emission"],
+                             save_name="speed_profiles_DQN_66_47_78_79",
+                             labels=["Linear", "ReLU", "Linear w. dropout", "ReLU w. dropout"])
 
 
 if __name__ == '__main__':
